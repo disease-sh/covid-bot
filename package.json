@@ -1,0 +1,33 @@
+{
+  "name": "covid-bot",
+  "version": "1.0.0",
+  "description": "my way of quickstarting a node project",
+  "main": "app.js",
+  "dependencies": {
+    "canvas": "2.6.1",
+    "chartjs": "0.3.24",
+    "covidapi": "0.4.1",
+    "discord.js": "12.2.0",
+    "dotenv": "8.2.0"
+  },
+  "devDependencies": {
+    "@aero/eslint-config": "1.0.1",
+    "nodemon": "2.0.3",
+    "eslint": "6.8.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js",
+    "lint": "eslint '*.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/puf17640/covid-bot.git"
+  },
+  "author": "puf17640",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/puf17640/covid-bot/issues"
+  },
+  "homepage": "https://github.com/puf17640/covid-bot#readme"
+}
