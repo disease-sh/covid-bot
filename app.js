@@ -1,7 +1,7 @@
-const api = require('covidapi'),
-	Discord = require('discord.js'),
+const Discord = require('discord.js'),
 	moment = require('moment'),
-	{ CanvasRenderService } = require('chartjs-node-canvas')
+	parser = require('discord-command-parser'),
+	commands = require('./commands')
 
 const client = new Discord.Client(),
 	config = require('dotenv').config()
@@ -12,27 +12,6 @@ if (config.error) {
 }
 
 const prefix = process.env.PREFIX || 'cov'
-const canvasRenderService = new CanvasRenderService(1200, 600, (ChartJS) => {
-	ChartJS.defaults.global.defaultFontColor='#fff'
-	ChartJS.defaults.global.defaultFontStyle='bold'
-	ChartJS.defaults.global.defaultFontFamily='Helvetica Neue, Helvetica, Arial, sans-serif'
-})
-
-const formatNumber = number => String(number).replace(/(.)(?=(\d{3})+$)/g,'$1,')
-
-const createEmbed = (opts) => {
-	return new Discord.MessageEmbed()
-		.setColor(opts.color)
-		.setAuthor(opts.author.name, opts.author.url)
-		.setThumbnail(opts.thumbnail)
-		.setDescription(opts.description || '')
-		.setTitle(opts.title)
-		.addFields(opts.fields || [])
-		.setTimestamp()
-		.attachFiles(opts.files || [])
-		.setImage(opts.image || '')
-		.setFooter(opts.footer)
-}
 
 client.once('ready', () => {
 	console.log('[INFO]: bot is running')
@@ -40,17 +19,30 @@ client.once('ready', () => {
 })
 
 client.on('message', async message => {
+	const parsed = parser.parse(message, prefix)
+	if	(!parsed.success) return;
+
+	if(commands[parsed.command])
+		commands[parsed.command](message, parsed.arguments)
+	else 
+		commands['help'](message)
+
 	const { content, author, channel } = message
 	if(author.bot || !content.startsWith(prefix+" ")) return
 	const args = message.content.slice(prefix).trim().split(/ +/g);
 	if (args.length > 1) {
-		let embed, buffer;
+		let embed, buffer, data;
 		switch (args[1]) {
 			case 'c':
 			case 'country':
 				//#region 
-				const countryData = await api.countries({ country: args[2] })
-				const yesterdayCountryData = await api.yesterday.countries({ country: args[2] })
+				if (args.length < 3){
+					await message.reply('Please specify a country name.')
+					return
+				}
+				data = { country: args.splice(2).join(' ').trim()}
+				const countryData = await api.countries(data)
+				const yesterdayCountryData = await api.yesterday.countries(data)
 				countryData.todayActives = countryData.active - yesterdayCountryData.active
 				countryData.todayRecovereds = countryData.recovered - yesterdayCountryData.recovered
 				countryData.todayCriticals = countryData.critical - yesterdayCountryData.critical
@@ -82,8 +74,8 @@ client.on('message', async message => {
 			case 'graph':
 			case 'history':
 				//#region 
-				const lineData = args[2] ? await api.historical.countries({ country: args[2], days: -1 }) : {timeline: await api.historical.all({days: -1})}
-				buffer = await canvasRenderService.renderToBuffer({
+				const lineData = args.length > 2 ? await api.historical.countries({ country: args.splice(2).join(' ').trim(), days: -1 }) : {timeline: await api.historical.all({days: -1})}
+				buffer = await lineRenderer.renderToBuffer({
 					type: 'line',
 					data: {
 						labels: Object.keys(lineData.timeline.cases),
@@ -97,24 +89,24 @@ client.on('message', async message => {
 						},
 						{
 							label: "Deaths",
-							borderColor: '#ff0000',
-							pointBackgroundColor: '#ff0000',
+							borderColor: '#E26363',
+							pointBackgroundColor: '#E26363',
 							pointRadius: 2,
 							borderWidth: 3,
 							data: Object.keys(lineData.timeline.deaths).map(key => lineData.timeline.deaths[key])
 						},
 						{
 							label: "Recovered",
-							borderColor: '#00ff00',
-							pointBackgroundColor: '#00ff00',
+							borderColor: '#74D99F',
+							pointBackgroundColor: '#74D99F',
 							pointRadius: 2,
 							borderWidth: 3,
 							data: Object.keys(lineData.timeline.recovered).map(key => lineData.timeline.recovered[key])
 						},
 						{
 							label: "Active",
-							borderColor: '#ffff00',
-							pointBackgroundColor: '#ffff00',
+							borderColor: '#FAE29F',
+							pointBackgroundColor: '#FAE29F',
 							pointRadius: 2,
 							borderWidth: 3,
 							data: Object.keys(lineData.timeline.cases).map(key => lineData.timeline.cases[key] - lineData.timeline.recovered[key] - lineData.timeline.deaths[key])
@@ -171,22 +163,24 @@ client.on('message', async message => {
 			case 'o':
 			case 'overview':
 				//#region 
-				const pieData = args[2] ? await api.countries({ country: args[2] }) : await api.all()
-				buffer = await canvasRenderService.renderToBuffer({
+				const pieData = args.length > 2 ? await api.countries({ country: args.splice(2).join(' ').trim() }) : await api.all()
+				buffer = await pieRenderer.renderToBuffer({
 					type: 'pie',
 					data: {
 						labels: ['Active', 'Recovered', 'Deaths'],
 						datasets: [{
 							data: [pieData.active, pieData.recovered, pieData.deaths],
-							backgroundColor: ['#ffff00', '#00ff00', '#ff0000']
+							backgroundColor: ['#FAE29F', '#7FD99F', '#E26363'],
+							borderWidth: 0.5,
+							borderColor: ['#FAE29F', '#7FD99F', '#E26363']
 						}]
 					},
 					options: {
 						legend: {
 							display: true,
 							labels: {
-								padding: 25,
-								fontSize: 15
+								padding: 40,
+								fontSize: 30
 							}
 						}
 					}
@@ -234,16 +228,21 @@ client.on('message', async message => {
 				break
 				//#endregion
 			case 's':
-			case 'states':
+			case 'state':
 				//#region 
-				const stateData = await api.states({ state: args[2] })
-				const yesterdayStateData = await api.yesterday.states({ state: args[2] })
+				if (args.length < 3){
+					await message.reply('Please specify a state name.')
+					return
+				}
+				data = { state: args.splice(2).join(' ').trim() }
+				const stateData = await api.states(data)
+				const yesterdayStateData = await api.yesterday.states(data)
 				stateData.todayActives = stateData.active - yesterdayStateData.active
 				stateData.todayTests = stateData.tests - yesterdayStateData.tests
 				embed = createEmbed({
 					color: '#303136', 
 					author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
-					thumbnail: 'https://github.com/NovelCOVID/API/blob/master/public/assets/img/flags/us.png',
+					thumbnail: 'https://disease.sh/assets/img/flags/us.png',
 					title: `${stateData.state}, USA`,
 					fields: [
 						{ name: 'Cases', value: `${formatNumber(stateData.cases)}\n(${(stateData.todayCases >= 0 ? "+":"-")+String(Math.abs(stateData.todayCases)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
@@ -251,7 +250,7 @@ client.on('message', async message => {
 						{ name: 'Active', value: `${formatNumber(stateData.active)}\n(${(stateData.todayActives >= 0 ? "+":"-")+String(Math.abs(stateData.todayActives)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
 						{ name: 'Tests', value: `${formatNumber(stateData.tests)}\n(${(stateData.todayTests >= 0 ? "+":"-")+String(Math.abs(stateData.todayTests)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
 						{ name: 'Test rate', value: `${(stateData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
-						{ name: 'Last Updated', value: moment(allData.updated).fromNow(), inline: true }
+						{ name: 'Last Updated', value: moment(stateData.updated).fromNow(), inline: true }
 					],
 					footer: 'Fetched from https://disease.sh'
 				})
@@ -259,12 +258,13 @@ client.on('message', async message => {
 				break
 				//#endregion
 			case 'l':
+			case 'r':
 			case 'rank':
 			case 'leaderboard':
 				//#region 
-				const max = parseInt(args[2] || 10)
+				let max = typeof(parseInt(args[2])) !== 'number' ? 10 : parseInt(args[2])
 				const totalCases = (await api.all()).cases
-				const leaderboard = (await api.countries({ sort: 'cases' })).splice(0, max)
+				const leaderboard = (await api.countries({ sort: 'cases' })).splice(0, max > 25 ? 25 : max)
 				embed = createEmbed({
 					color: '#303136', 
 					author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
