@@ -1,4 +1,6 @@
-const api = require('covidapi'),
+const Discord = require('discord.js'),
+  api = require('covidapi'),
+	moment = require('moment'),
   { CanvasRenderService } = require('chartjs-node-canvas')
 
 const lineRenderer = new CanvasRenderService(1200, 600, (ChartJS) => {
@@ -48,11 +50,40 @@ const help = async message => await message.channel.send('Help command')
 
 const invite = async message => await message.channel.send('https://discord.com/api/oauth2/authorize?client_id=707564241279909888&permissions=51200&scope=bot')
 
+const all = async message => {
+  const allData = await api.all()
+  const yesterdayAllData = await api.yesterday.all()
+  allData.todayActives = allData.active - yesterdayAllData.active
+  allData.todayRecovereds = allData.recovered - yesterdayAllData.recovered
+  allData.todayCriticals = allData.critical - yesterdayAllData.critical
+  allData.todayTests = allData.tests - yesterdayAllData.tests
+  embed = createEmbed({
+    color: '#303136', 
+    author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
+    thumbnail: 'https://i2x.ai/wp-content/uploads/2018/01/flag-global.jpg',
+    title: 'Global Data',
+    fields: [
+      { name: 'Cases', value: `${formatNumber(allData.cases)}\n(${(allData.todayCases >= 0 ? "+":"-")+String(Math.abs(allData.todayCases)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Deaths', value: `${formatNumber(allData.deaths)}\n(${(allData.todayDeaths >= 0 ? "+":"-")+String(Math.abs(allData.todayDeaths)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Active', value: `${formatNumber(allData.active)}\n(${(allData.todayActives >= 0 ? "+":"-")+String(Math.abs(allData.todayActives)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Recovered', value: `${formatNumber(allData.recovered)}\n(${(allData.todayRecovereds >= 0 ? "+":"-")+String(Math.abs(allData.todayRecovereds)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Critical', value: `${formatNumber(allData.critical)}\n(${(allData.todayCriticals >= 0 ? "+":"-")+String(Math.abs(allData.todayCriticals)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Tests', value: `${formatNumber(allData.tests)}\n(${(allData.todayTests >= 0 ? "+":"-")+String(Math.abs(allData.todayTests)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Infection Rate', value: `${(allData.casesPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Fatality rate', value: `${(allData.deathsPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Test rate', value: `${(allData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Last Updated', value: moment(allData.updated).fromNow(), inline: true }
+    ],
+    footer: 'Fetched from https://disease.sh'
+  })
+  return await message.channel.send(embed)
+}
+
 const country = async (message, args) => {
   if (args.length < 1){
     return await message.channel.send('Please specify a country name.')
   }
-  data = { country: args.splice(2).join(' ').trim()}
+  data = { country: args.join(' ').trim()}
   const countryData = await api.countries(data)
   const yesterdayCountryData = await api.yesterday.countries(data)
   countryData.todayActives = countryData.active - yesterdayCountryData.active
@@ -82,7 +113,7 @@ const country = async (message, args) => {
 }
 
 const graph = async (message, args) => {
-  const lineData = args.length > 0 ? await api.historical.countries({ country: args.splice(2).join(' ').trim(), days: -1 }) : {timeline: await api.historical.all({days: -1})}
+  const lineData = args.length > 0 ? await api.historical.countries({ country: args.join(' ').trim(), days: -1 }) : {timeline: await api.historical.all({days: -1})}
   buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
@@ -169,7 +200,7 @@ const graph = async (message, args) => {
 }
 
 const overview = async (message, args) => {
-  const pieData = args.length > 2 ? await api.countries({ country: args.splice(2).join(' ').trim() }) : await api.all()
+  const pieData = args.length > 2 ? await api.countries({ country: args.join(' ').trim() }) : await api.all()
   buffer = await pieRenderer.renderToBuffer({
     type: 'pie',
     data: {
@@ -206,7 +237,7 @@ const state = async (message, args) => {
   if (args.length < 1){
     return await message.reply('Please specify a state name.')
   }
-  data = { state: args.splice(2).join(' ').trim() }
+  data = { state: args.join(' ').trim() }
   const stateData = await api.states(data)
   const yesterdayStateData = await api.yesterday.states(data)
   stateData.todayActives = stateData.active - yesterdayStateData.active
@@ -226,7 +257,7 @@ const state = async (message, args) => {
     ],
     footer: 'Fetched from https://disease.sh'
   })
-  return await channel.send(embed)
+  return await message.channel.send(embed)
 }
 
 const leaderboard = async (message, args) => {
@@ -240,7 +271,7 @@ const leaderboard = async (message, args) => {
     description: leaderboard.map((c, index) => `**${++index}**. ${c.country} \u279C ${(c.cases/totalCases*100).toFixed(2)} %`).join('\n'),
     footer: 'Fetched from https://disease.sh'
   })
-  return await channel.send(embed)
+  return await message.channel.send(embed)
 }
 
 module.exports = {
@@ -248,6 +279,8 @@ module.exports = {
   h: help,
   invite,
   i: invite,
+  all,
+  a: all,
   country,
   c: country,
   graph,
