@@ -31,19 +31,21 @@ const pieRenderer = new CanvasRenderService(700, 600, (ChartJS) => {
     }
   })
 })
+const sortables = ['cases', 'deaths', 'active', 'recovered', 'todayCases', 'todayDeaths', 'critical', 'tests', 'testsPerOneMillion', 'deathsPerOneMillion', 'casesPerOneMillion', 'updated']
 
 const formatNumber = number => String(number).replace(/(.)(?=(\d{3})+$)/g,'$1,')
 
 const createEmbed = (opts) => new Discord.MessageEmbed()
-  .setColor(opts.color)
-  .setAuthor(opts.author.name, opts.author.url)
-  .setThumbnail(opts.thumbnail)
-  .setDescription(opts.description || '')
   .setTitle(opts.title)
-  .addFields(opts.fields || [])
-  .setTimestamp()
+  .setAuthor(opts.author.name, opts.author.url)
+  .setDescription(opts.description || '')
+  .setThumbnail(opts.thumbnail)
+  .setColor(opts.color)
   .attachFiles(opts.files || [])
+  .addFields(opts.fields || [])
   .setImage(opts.image || '')
+  .setURL(opts.url)
+  .setTimestamp()
   .setFooter(opts.footer)
 
 const help = async message => await message.channel.send('Help command')
@@ -74,18 +76,19 @@ const all = async message => {
       { name: 'Test rate', value: `${(allData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
       { name: 'Last Updated', value: moment(allData.updated).fromNow(), inline: true }
     ],
-    footer: 'Fetched from https://disease.sh'
+    footer: 'Fetched from https://disease.sh',
+    url: 'https://disease.sh'
   })
   return await message.channel.send(embed)
 }
 
 const country = async (message, args) => {
-  if (args.length < 1){
+  if (args.length < 1)
     return await message.channel.send('Please specify a country name.')
-  }
-  data = { country: args.join(' ').trim()}
-  const countryData = await api.countries(data)
-  const yesterdayCountryData = await api.yesterday.countries(data)
+  const countryData = await api.countries({ country: args[0]})
+  const yesterdayCountryData = await api.yesterday.countries({ country: args })
+  if(countryData.message || yesterdayCountryData.message) 
+    return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
   countryData.todayActives = countryData.active - yesterdayCountryData.active
   countryData.todayRecovereds = countryData.recovered - yesterdayCountryData.recovered
   countryData.todayCriticals = countryData.critical - yesterdayCountryData.critical
@@ -107,13 +110,18 @@ const country = async (message, args) => {
       { name: 'Test rate', value: `${(countryData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
       { name: 'Last Updated', value: moment(countryData.updated).fromNow(), inline: true }
     ],
-    footer: 'Fetched from https://disease.sh'
+    footer: 'Fetched from https://disease.sh',
+    url: 'https://disease.sh'
   })
   return await message.channel.send(embed)
 }
 
 const graph = async (message, args) => {
-  const lineData = args.length > 0 ? await api.historical.countries({ country: args.join(' ').trim(), days: -1 }) : {timeline: await api.historical.all({days: -1})}
+  if (args.length < 1)
+    return await message.channel.send('Please specify a country name.')
+  const lineData = ['global', 'all'].includes(args[0].toLowerCase()) ? {timeline: await api.historical.all({days: -1})} : await api.historical.countries({ country: args[0], days: -1 })
+  if(lineData.message) 
+    return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
   buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
@@ -167,6 +175,7 @@ const graph = async (message, args) => {
         }],
         yAxes: [{
           display: true,
+          type: args[1] === 'log' ? 'logarithmic' : 'linear',
           ticks: {
             fontSize: 17.5,
             callback: formatNumber 
@@ -188,19 +197,24 @@ const graph = async (message, args) => {
     }
   })
   embed = createEmbed({
-    color: '#303136', 
+    color: '#303136',
     author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
     title: `${lineData.country || 'Global'} Timeline`,
     description: 'Data is provided by John Hopkins University.',
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
     image: 'attachment://graph.png',
-    footer: 'Fetched from https://disease.sh'
+    footer: 'Fetched from https://disease.sh',
+    url: 'https://disease.sh'
   })
   return await message.channel.send(embed)
 }
 
 const overview = async (message, args) => {
-  const pieData = args.length > 2 ? await api.countries({ country: args.join(' ').trim() }) : await api.all()
+  if (args.length < 1)
+    return await message.reply('Please specify a country name.')
+  const pieData = ['global', 'all'].includes(args[0].toLowerCase()) ? await api.all() : await api.countries({ country: args[0] })
+  if(pieData.message) 
+    return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
   buffer = await pieRenderer.renderToBuffer({
     type: 'pie',
     data: {
@@ -228,18 +242,19 @@ const overview = async (message, args) => {
     title: `${pieData.country || 'Global'} Overview`,
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
     image: 'attachment://graph.png',
-    footer: 'Fetched from https://disease.sh'
+    footer: 'Fetched from https://disease.sh',
+    url: 'https://disease.sh'
   })
   return await message.channel.send(embed)
 }
 
 const state = async (message, args) => {
-  if (args.length < 1){
+  if (args.length < 1)
     return await message.reply('Please specify a state name.')
-  }
-  data = { state: args.join(' ').trim() }
-  const stateData = await api.states(data)
-  const yesterdayStateData = await api.yesterday.states(data)
+  const stateData = await api.states({ state: args[0] })
+  const yesterdayStateData = await api.yesterday.states({ state: args[0] })
+  if(stateData.message || yesterdayStateData.message) 
+    return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
   stateData.todayActives = stateData.active - yesterdayStateData.active
   stateData.todayTests = stateData.tests - yesterdayStateData.tests
   embed = createEmbed({
@@ -255,21 +270,23 @@ const state = async (message, args) => {
       { name: 'Test rate', value: `${(stateData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
       { name: 'Last Updated', value: moment(stateData.updated).fromNow(), inline: true }
     ],
-    footer: 'Fetched from https://disease.sh'
+    footer: 'Fetched from https://disease.sh',
+    url: 'https://disease.sh'
   })
   return await message.channel.send(embed)
 }
 
 const leaderboard = async (message, args) => {
-  let max = typeof(parseInt(args[2])) !== 'number' ? 10 : parseInt(args[2])
-  const totalCases = (await api.all()).cases
-  const leaderboard = (await api.countries({ sort: 'cases' })).splice(0, max > 25 ? 25 : max)
+  const allData = await api.all()
+  const sorter = sortables.includes(args[0]) ? args[0] : 'cases'
+  const leaderboard = (await api.countries({ sort: sorter })).splice(0, 15)
   embed = createEmbed({
     color: '#303136', 
     author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
-    title: `Top ${max} Countries`,
-    description: leaderboard.map((c, index) => `**${++index}**. ${c.country} \u279C ${(c.cases/totalCases*100).toFixed(2)} %`).join('\n'),
-    footer: 'Fetched from https://disease.sh'
+    title: `Top 15 Countries sorted by '${sorter}'`,
+    description: leaderboard.map((c, index) => `**${++index}**. ${c.country} \u279C ${(c[sorter]/allData[sorter]*100).toFixed(2)} %`).join('\n'),
+    footer: 'Fetched from https://disease.sh',
+    url: 'https://disease.sh'
   })
   return await message.channel.send(embed)
 }
