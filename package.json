@@ -4,11 +4,12 @@
   "description": "my way of quickstarting a node project",
   "main": "app.js",
   "dependencies": {
-    "canvas": "2.6.1",
-    "chartjs": "0.3.24",
-    "covidapi": "0.4.1",
+    "chart.js": "2.9.3",
+    "chartjs-node-canvas": "3.0.6",
+    "covidapi": "0.4.3",
     "discord.js": "12.2.0",
-    "dotenv": "8.2.0"
+    "dotenv": "8.2.0",
+    "moment": "2.25.3"
   },
   "devDependencies": {
     "@aero/eslint-config": "1.0.1",
