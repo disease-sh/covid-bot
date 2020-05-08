@@ -314,24 +314,26 @@ const mobility = async (message, args) => {
     pointBackgroundColor: '#FAE29F',
     pointRadius: 2,
     borderWidth: 3,
-    data: mobData.data.map(x => x.walking)
+    data: mobData.data.map(x => x.walking || 0)
   },{
     label: "Driving",
     borderColor: '#7FD99F',
     pointBackgroundColor: '#7FD99F',
     pointRadius: 2,
     borderWidth: 3,
-    data: mobData.data.map(x => x.driving)
+    data: mobData.data.map(x => x.driving || 0)
+  },{
+    label: "Transit",
+    borderColor: '#E26363',
+    pointBackgroundColor: '#E26363',
+    pointRadius: 2,
+    borderWidth: 3,
+    data: mobData.data.map(x => x.transit || 0)
   }]
-  if (mobData.data.map(x => x.transit).filter(x => x).length > 0)
-    datasets.push({
-      label: "Transit",
-      borderColor: '#E26363',
-      pointBackgroundColor: '#E26363',
-      pointRadius: 2,
-      borderWidth: 3,
-      data: mobData.data.map(x => x.transit || 0)
-    })
+  for(const index in datasets)
+    if(datasets[index].data.filter(x => x).length === 0)
+      datasets.splice(index, 1)
+  
   buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
