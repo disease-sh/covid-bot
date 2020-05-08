@@ -289,7 +289,7 @@ const state = async (message, args) => {
 
 const leaderboard = async (message, args) => {
   const allData = await api.all()
-  const sorter = sortables.includes(args[0]) ? args[0] : 'cases'
+  const sorter = sortables.includes(args[0].toLowerCase()) ? args[0].toLowerCase() : 'cases'
   const leaderboard = (await api.countries({ sort: sorter })).splice(0, 15)
   const embed = createEmbed({
     color: '#303136', 
