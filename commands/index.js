@@ -3,6 +3,13 @@ const Discord = require('discord.js'),
 	moment = require('moment'),
   { CanvasRenderService } = require('chartjs-node-canvas')
 
+String.prototype.toCamelCase = function() {
+  return this.toLowerCase()
+    .replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
+    .replace(/\s/g, '')
+    .replace(/^(.)/, function($1) { return $1.toLowerCase(); });
+}
+
 const setup = (ChartJS) => {
   ChartJS.defaults.global.defaultFontColor='#fff'
   ChartJS.defaults.global.defaultFontStyle='bold'
@@ -23,7 +30,7 @@ const setup = (ChartJS) => {
   
 const lineRenderer = new CanvasRenderService(1200, 600, setup)
 const pieRenderer = new CanvasRenderService(700, 600, setup)
-const sortables = ['cases', 'deaths', 'active', 'recovered', 'todayCases', 'todayDeaths', 'critical', 'tests', 'testsPerOneMillion', 'deathsPerOneMillion', 'casesPerOneMillion', 'updated']
+const sortables = ['cases', 'deaths', 'active', 'recovered', 'todaycases', 'todaydeaths', 'critical', 'tests', 'testsperonemillion', 'deathsperonemillion', 'casesperonemillion', 'updated']
 
 const formatNumber = number => String(number).replace(/(.)(?=(\d{3})+$)/g,'$1,')
 
@@ -289,7 +296,8 @@ const state = async (message, args) => {
 
 const leaderboard = async (message, args) => {
   const allData = await api.all()
-  const sorter = sortables.includes(args[0].toLowerCase()) ? args[0].toLowerCase() : 'cases'
+  const sorter = sortables.includes(args[0].toLowerCase()) ? args[0].toCamelCase() : 'cases'
+  console.log(sorter)
   const leaderboard = (await api.countries({ sort: sorter })).splice(0, 15)
   const embed = createEmbed({
     color: '#303136', 
