@@ -23,7 +23,7 @@ const setup = (ChartJS) => {
   
 const lineRenderer = new CanvasRenderService(1200, 600, setup)
 const pieRenderer = new CanvasRenderService(700, 600, setup)
-const sortables = { 'cases': null, 'deaths': null, 'active': null, 'recovered': null, 'todaycases': 'todayCases', 'todaydeaths': 'todayDeaths', 'critical': null, 'tests': null, 'testsperonemillion': 'testsPerOneMillion', 'deathsperonemillion': 'deathsPerOneMillion', 'casesperonemillion': 'casesPerOneMillion', 'updated': null }
+const sortables = { 'cases': null, 'deaths': null, 'active': null, 'recovered': null, 'todaycases': 'todayCases', 'todaydeaths': 'todayDeaths', 'critical': null, 'tests': null, 'testsperonemillion': 'testsPerOneMillion', 'deathsperonemillion': 'deathsPerOneMillion', 'casesperonemillion': 'casesPerOneMillion' }
 
 const formatNumber = number => String(number).replace(/(.)(?=(\d{3})+$)/g,'$1,')
 
@@ -289,14 +289,13 @@ const state = async (message, args) => {
 
 const leaderboard = async (message, args) => {
   const allData = await api.all()
-  const sorter = Object.keys(sortables).includes(args[0].toLowerCase()) ? (sortables[args[0].toLowerCase()] || args[0].toLowerCase()) : 'cases'
-  console.log(sorter)
+  const sorter = Object.keys(sortables).includes(args[0] && args[0].toLowerCase()) ? (sortables[args[0].toLowerCase()] || args[0].toLowerCase()) : 'cases'
   const leaderboard = (await api.countries({ sort: sorter })).splice(0, 15)
   const embed = createEmbed({
-    color: '#303136', 
+    color: '#303136',
     author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
     title: `Top 15 Countries sorted by '${sorter}'`,
-    description: leaderboard.map((c, index) => `**${++index}**. ${c.country} \u279C ${(c[sorter]/allData[sorter]*100).toFixed(2)} %`).join('\n'),
+    description: leaderboard.map((c, index) => `**${++index}**. ${c.country} \u279C ${(sorter.includes('PerOneMillion') ? String(c[sorter]).replace(/(.)(?=(\d{3})+$)/g,'$1,') : (c[sorter]/allData[sorter]*100).toFixed(2)+' %')}`).join('\n'),
     footer: 'Fetched from https://disease.sh',
     url: 'https://disease.sh'
   })
@@ -304,7 +303,11 @@ const leaderboard = async (message, args) => {
 }
 
 const mobility = async (message, args) => {
+  if (args.length < 1)
+    return await message.reply('Please specify a country name.')
   const mobData = await api.apple.mobilityData({ country: args[0], subregion: args[1] || 'all'})
+  if(mobData.message) 
+    return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
   const datasets = [{
     label: "Walking",
     borderColor: '#FAE29F',
