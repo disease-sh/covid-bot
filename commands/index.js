@@ -3,11 +3,14 @@ const Discord = require('discord.js'),
 	moment = require('moment'),
   { CanvasRenderService } = require('chartjs-node-canvas')
 
-const lineRenderer = new CanvasRenderService(1200, 600, (ChartJS) => {
+const setup = (ChartJS) => {
   ChartJS.defaults.global.defaultFontColor='#fff'
   ChartJS.defaults.global.defaultFontStyle='bold'
   ChartJS.defaults.global.defaultFontFamily='Helvetica Neue, Helvetica, Arial, sans-serif'
   ChartJS.plugins.register({
+    beforeInit: function(chart, options){
+      chart.legend.afterFit = function() { this.height += 35 }
+    },
     beforeDraw: (chart, options) => {
       const ctx = chart.ctx;
       ctx.save();
@@ -16,21 +19,10 @@ const lineRenderer = new CanvasRenderService(1200, 600, (ChartJS) => {
       ctx.restore();
     }
   })
-})
-const pieRenderer = new CanvasRenderService(700, 600, (ChartJS) => {
-  ChartJS.defaults.global.defaultFontColor='#fff'
-  ChartJS.defaults.global.defaultFontStyle='bold'
-  ChartJS.defaults.global.defaultFontFamily='Helvetica Neue, Helvetica, Arial, sans-serif'
-  ChartJS.plugins.register({
-    beforeDraw: (chart, options) => {
-      const ctx = chart.ctx;
-      ctx.save();
-      ctx.fillStyle = '#2F3136';
-      ctx.fillRect(0, 0, chart.width, chart.height);
-      ctx.restore();
-    }
-  })
-})
+}
+  
+const lineRenderer = new CanvasRenderService(1200, 600, setup)
+const pieRenderer = new CanvasRenderService(700, 600, setup)
 const sortables = ['cases', 'deaths', 'active', 'recovered', 'todayCases', 'todayDeaths', 'critical', 'tests', 'testsPerOneMillion', 'deathsPerOneMillion', 'casesPerOneMillion', 'updated']
 
 const formatNumber = number => String(number).replace(/(.)(?=(\d{3})+$)/g,'$1,')
@@ -46,9 +38,28 @@ const createEmbed = (opts) => new Discord.MessageEmbed()
   .setImage(opts.image || '')
   .setURL(opts.url)
   .setTimestamp()
-  .setFooter(opts.footer)
+  .setFooter(opts.footer || '')
 
-const help = async message => await message.channel.send('Help command')
+const help = async (message, args) => {
+  const embed = createEmbed({
+    color: '#303136', 
+    author: { name: 'COVID-Bot Help', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
+    title: `All commands`,
+    fields: [
+      { name: 'Help', value: '`cov help`\nshows available commands', inline: true },
+      { name: 'Invite', value: '`cov invite`\nadd the bot to your own server', inline: true },
+      { name: 'All', value: '`cov all`\nshows global COVID stats', inline: true },
+      { name: 'Country', value: '`cov country {country} [{log|linear}]`\nshows detailed COVID stats for a country', inline: true },
+      { name: 'Graph', value: '`cov graph {country|all}`\nshows a graph with cases, active, deaths and recovered', inline: true },
+      { name: 'Overview', value: '`cov overview {country|all}`\nshows an overview chart with active, deaths and recovered', inline: true },
+      { name: 'State', value: '`cov state {state}`\nshows detailed COVID stats for a US state', inline: true },
+      { name: 'Leaderboard', value: '`cov leaderboard [{property}]`\nshows detailed COVID stats for a US state', inline: true },
+      { name: 'Mobility', value: '`cov mobility {country} [{subregion}]`\nshows Apples mobility data in a graph', inline: true },
+    ],
+    url: 'https://disease.sh'
+  })
+  await message.channel.send(embed)
+}
 
 const invite = async message => await message.channel.send('https://discord.com/api/oauth2/authorize?client_id=707564241279909888&permissions=51200&scope=bot')
 
@@ -59,7 +70,7 @@ const all = async message => {
   allData.todayRecovereds = allData.recovered - yesterdayAllData.recovered
   allData.todayCriticals = allData.critical - yesterdayAllData.critical
   allData.todayTests = allData.tests - yesterdayAllData.tests
-  embed = createEmbed({
+  const embed = createEmbed({
     color: '#303136', 
     author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
     thumbnail: 'https://i2x.ai/wp-content/uploads/2018/01/flag-global.jpg',
@@ -93,7 +104,7 @@ const country = async (message, args) => {
   countryData.todayRecovereds = countryData.recovered - yesterdayCountryData.recovered
   countryData.todayCriticals = countryData.critical - yesterdayCountryData.critical
   countryData.todayTests = countryData.tests - yesterdayCountryData.tests
-  embed = createEmbed({
+  const embed = createEmbed({
     color: '#303136', 
     author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
     thumbnail: countryData.countryInfo.flag,
@@ -190,13 +201,13 @@ const graph = async (message, args) => {
         display: true,
         labels: {
           usePointStyle: true,
-          padding: 25,
-          fontSize: 15
+          padding: 40,
+          fontSize: 30
         }
       }
     }
   })
-  embed = createEmbed({
+  const embed = createEmbed({
     color: '#303136',
     author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
     title: `${lineData.country || 'Global'} Timeline`,
@@ -236,7 +247,7 @@ const overview = async (message, args) => {
       }
     }
   })
-  embed = createEmbed({
+  const embed = createEmbed({
     color: '#303136', 
     author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
     title: `${pieData.country || 'Global'} Overview`,
@@ -257,7 +268,7 @@ const state = async (message, args) => {
     return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
   stateData.todayActives = stateData.active - yesterdayStateData.active
   stateData.todayTests = stateData.tests - yesterdayStateData.tests
-  embed = createEmbed({
+  const embed = createEmbed({
     color: '#303136', 
     author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
     thumbnail: 'https://disease.sh/assets/img/flags/us.png',
@@ -280,11 +291,95 @@ const leaderboard = async (message, args) => {
   const allData = await api.all()
   const sorter = sortables.includes(args[0]) ? args[0] : 'cases'
   const leaderboard = (await api.countries({ sort: sorter })).splice(0, 15)
-  embed = createEmbed({
+  const embed = createEmbed({
     color: '#303136', 
     author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
     title: `Top 15 Countries sorted by '${sorter}'`,
     description: leaderboard.map((c, index) => `**${++index}**. ${c.country} \u279C ${(c[sorter]/allData[sorter]*100).toFixed(2)} %`).join('\n'),
+    footer: 'Fetched from https://disease.sh',
+    url: 'https://disease.sh'
+  })
+  return await message.channel.send(embed)
+}
+
+const mobility = async (message, args) => {
+  const mobData = await api.apple.mobilityData({ country: args[0], subregion: args[1] || 'all'})
+  const datasets = [{
+    label: "Walking",
+    borderColor: '#FAE29F',
+    pointBackgroundColor: '#FAE29F',
+    pointRadius: 2,
+    borderWidth: 3,
+    data: mobData.data.map(x => x.walking)
+  },{
+    label: "Driving",
+    borderColor: '#7FD99F',
+    pointBackgroundColor: '#7FD99F',
+    pointRadius: 2,
+    borderWidth: 3,
+    data: mobData.data.map(x => x.driving)
+  }]
+  if (mobData.data.map(x => x.transit).filter(x => x).length > 0)
+    datasets.push({
+      label: "Transit",
+      borderColor: '#E26363',
+      pointBackgroundColor: '#E26363',
+      pointRadius: 2,
+      borderWidth: 3,
+      data: mobData.data.map(x => x.transit || 0)
+    })
+  buffer = await lineRenderer.renderToBuffer({
+    type: 'line',
+    data: {
+      labels: mobData.data.map(x => x.date),
+      datasets
+    },
+    options: {
+      scales: {
+        xAxes: [{
+          display: true,
+          ticks: {
+            fontSize: 17.5,
+            callback: (label) => moment(label, 'YYYY-MM-DD').format('DD MMM'),
+            padding: 10
+          },
+          gridLines: {
+            zeroLineColor: '#fff',
+            zeroLineWidth: 2
+          }
+        }],
+        yAxes: [{
+          display: true,
+          ticks: {
+            fontSize: 17.5,
+            callback: (label) => {
+              label += 100
+              return `${label == 100 ? '' : (label > 100 ? '+' : '-')}${Math.abs(label-100)} %`
+            }
+          },
+          gridLines: {
+            zeroLineColor: '#fff',
+            zeroLineWidth: 2
+          }
+        }]
+      },
+      legend: {
+        display: true,
+        labels: {
+          usePointStyle: true,
+          padding: 40,
+          fontSize: 30
+        }
+      }
+    }
+  })
+  const embed = createEmbed({
+    color: '#303136',
+    author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
+    title: `${mobData.country}, ${mobData.subregion} Mobility Data`,
+    description: 'Data is provided by Apple. All values are relative to those from 13th Jan.',
+    files: [new Discord.MessageAttachment(buffer, 'graph.png')],
+    image: 'attachment://graph.png',
     footer: 'Fetched from https://disease.sh',
     url: 'https://disease.sh'
   })
@@ -307,5 +402,7 @@ module.exports = {
   state,
   s: state,
   leaderboard,
-  l: leaderboard
+  l: leaderboard,
+  mobility,
+  m: mobility
 }
