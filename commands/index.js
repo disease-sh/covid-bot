@@ -28,7 +28,7 @@ const sortables = { 'cases': null, 'deaths': null, 'active': null, 'recovered': 
 const formatNumber = number => String(number).replace(/(.)(?=(\d{3})+$)/g,'$1,')
 
 const createEmbed = (opts) => new Discord.MessageEmbed()
-  .setTitle(opts.title)
+  .setTitle(opts.title || '')
   .setAuthor(opts.author.name, opts.author.url)
   .setDescription(opts.description || '')
   .setThumbnail(opts.thumbnail)
