@@ -43,7 +43,7 @@ const createEmbed = (opts) => new Discord.MessageEmbed()
 const help = async (message, args) => {
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID-Bot Help', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
+    author: { name: 'COVID-Bot Help', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     title: `All commands`,
     fields: [
       { name: 'Help', value: '`cov help`\nshows available commands', inline: true },
@@ -61,7 +61,14 @@ const help = async (message, args) => {
   await message.channel.send(embed)
 }
 
-const invite = async message => await message.channel.send('https://discord.com/api/oauth2/authorize?client_id=707564241279909888&permissions=51200&scope=bot')
+const invite = async message => {
+  const embed = createEmbed({
+    color: '#303136', 
+    author: { name: 'COVID Stats by NovelCOVID', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    description: '[Invite](https://discord.com/api/oauth2/authorize?client_id=707564241279909888&permissions=51200&scope=bot "Invite the bot to your server") | [Support Server](https://discord.gg/sszH4C9 "Get help regarding the bot and the API")'
+  })
+  return await message.channel.send(embed)
+}
 
 const all = async message => {
   const allData = await api.all()
@@ -72,7 +79,7 @@ const all = async message => {
   allData.todayTests = allData.tests - yesterdayAllData.tests
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
+    author: { name: 'COVID Stats by NovelCOVID', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     thumbnail: 'https://i2x.ai/wp-content/uploads/2018/01/flag-global.jpg',
     title: 'Global Data',
     fields: [
@@ -106,7 +113,7 @@ const country = async (message, args) => {
   countryData.todayTests = countryData.tests - yesterdayCountryData.tests
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
+    author: { name: 'COVID Stats by NovelCOVID', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     thumbnail: countryData.countryInfo.flag,
     title: `${countryData.country}, ${countryData.continent}`,
     fields: [
@@ -131,44 +138,47 @@ const graph = async (message, args) => {
   if (args.length < 1)
     return await message.channel.send('Please specify a country name.')
   const lineData = ['global', 'all'].includes(args[0].toLowerCase()) ? {timeline: await api.historical.all({days: -1})} : await api.historical.countries({ country: args[0], days: -1 })
-  if(lineData.message) 
+  if (lineData.message) 
     return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
+  const datasets = [{
+    label: "Cases",
+    borderColor: '#ffffff',
+    pointBackgroundColor: '#ffffff',
+    pointRadius: 2,
+    borderWidth: 3,
+    data: Object.keys(lineData.timeline.cases).map(key => lineData.timeline.cases[key])
+  },
+  {
+    label: "Deaths",
+    borderColor: '#E26363',
+    pointBackgroundColor: '#E26363',
+    pointRadius: 2,
+    borderWidth: 3,
+    data: Object.keys(lineData.timeline.deaths).map(key => lineData.timeline.deaths[key])
+  },
+  {
+    label: "Recovered",
+    borderColor: '#74D99F',
+    pointBackgroundColor: '#74D99F',
+    pointRadius: 2,
+    borderWidth: 3,
+    data: Object.keys(lineData.timeline.recovered).map(key => lineData.timeline.recovered[key])
+  },
+  {
+    label: "Active",
+    borderColor: '#FAE29F',
+    pointBackgroundColor: '#FAE29F',
+    pointRadius: 2,
+    borderWidth: 3,
+    data: Object.keys(lineData.timeline.cases).map(key => lineData.timeline.cases[key] - lineData.timeline.recovered[key] - lineData.timeline.deaths[key])
+  }]
+  for (const index in datasets)
+    if (datasets[index].data.filter(x => x).length === 0)
+      datasets.splice(index, 1)
   buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
-      labels: Object.keys(lineData.timeline.cases),
-      datasets: [{
-        label: "Cases",
-        borderColor: '#ffffff',
-        pointBackgroundColor: '#ffffff',
-        pointRadius: 2,
-        borderWidth: 3,
-        data: Object.keys(lineData.timeline.cases).map(key => lineData.timeline.cases[key])
-      },
-      {
-        label: "Deaths",
-        borderColor: '#E26363',
-        pointBackgroundColor: '#E26363',
-        pointRadius: 2,
-        borderWidth: 3,
-        data: Object.keys(lineData.timeline.deaths).map(key => lineData.timeline.deaths[key])
-      },
-      {
-        label: "Recovered",
-        borderColor: '#74D99F',
-        pointBackgroundColor: '#74D99F',
-        pointRadius: 2,
-        borderWidth: 3,
-        data: Object.keys(lineData.timeline.recovered).map(key => lineData.timeline.recovered[key])
-      },
-      {
-        label: "Active",
-        borderColor: '#FAE29F',
-        pointBackgroundColor: '#FAE29F',
-        pointRadius: 2,
-        borderWidth: 3,
-        data: Object.keys(lineData.timeline.cases).map(key => lineData.timeline.cases[key] - lineData.timeline.recovered[key] - lineData.timeline.deaths[key])
-      }]
+      datasets
     },
     options: {
       scales: {
@@ -209,7 +219,7 @@ const graph = async (message, args) => {
   })
   const embed = createEmbed({
     color: '#303136',
-    author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
+    author: { name: 'COVID Stats by NovelCOVID', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     title: `${lineData.country || 'Global'} Timeline`,
     description: 'Data is provided by John Hopkins University.',
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
@@ -249,7 +259,7 @@ const overview = async (message, args) => {
   })
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
+    author: { name: 'COVID Stats by NovelCOVID', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     title: `${pieData.country || 'Global'} Overview`,
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
     image: 'attachment://graph.png',
@@ -270,7 +280,7 @@ const state = async (message, args) => {
   stateData.todayTests = stateData.tests - yesterdayStateData.tests
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
+    author: { name: 'COVID Stats by NovelCOVID', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     thumbnail: 'https://disease.sh/assets/img/flags/us.png',
     title: `${stateData.state}, USA`,
     fields: [
@@ -293,7 +303,7 @@ const leaderboard = async (message, args) => {
   const leaderboard = (await api.countries({ sort: sorter })).splice(0, 15)
   const embed = createEmbed({
     color: '#303136',
-    author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
+    author: { name: 'COVID Stats by NovelCOVID', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     title: `Top 15 Countries sorted by '${sorter}'`,
     description: leaderboard.map((c, index) => `**${++index}**. ${c.country} \u279C ${(sorter.includes('PerOneMillion') ? String(c[sorter]).replace(/(.)(?=(\d{3})+$)/g,'$1,') : (c[sorter]/allData[sorter]*100).toFixed(2)+' %')}`).join('\n'),
     footer: 'Fetched from https://disease.sh',
@@ -333,11 +343,9 @@ const mobility = async (message, args) => {
   for(const index in datasets)
     if(datasets[index].data.filter(x => x).length === 0)
       datasets.splice(index, 1)
-  
   buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
-      labels: mobData.data.map(x => x.date),
       datasets
     },
     options: {
@@ -381,7 +389,7 @@ const mobility = async (message, args) => {
   })
   const embed = createEmbed({
     color: '#303136',
-    author: { name: 'COVID Stats by NovelCOVID', url: 'https://img.icons8.com/ios-filled/50/000000/virus.png' },
+    author: { name: 'COVID Stats by NovelCOVID', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     title: `${mobData.country}, ${mobData.subregion} Mobility Data`,
     description: 'Data is provided by Apple. All values are relative to those from 13th Jan.',
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
