@@ -178,6 +178,7 @@ const graph = async (message, args) => {
   buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
+      labels: Object.keys(lineData.timeline.cases),
       datasets
     },
     options: {
@@ -315,7 +316,7 @@ const leaderboard = async (message, args) => {
 const mobility = async (message, args) => {
   if (args.length < 1)
     return await message.reply('Please specify a country name.')
-  const mobData = await api.apple.mobilityData({ country: args[0], subregion: args[1] || 'all'})
+  const mobData = await api.apple.mobilityData({ country: args[0], subregion: args[1] || 'All'})
   if(mobData.message) 
     return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
   const datasets = [{
@@ -346,6 +347,7 @@ const mobility = async (message, args) => {
   buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
+      labels: mobData.data.map(x => x.date),
       datasets
     },
     options: {
