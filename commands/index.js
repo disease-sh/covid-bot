@@ -8,10 +8,10 @@ const setup = (ChartJS) => {
   ChartJS.defaults.global.defaultFontStyle='bold'
   ChartJS.defaults.global.defaultFontFamily='Helvetica Neue, Helvetica, Arial, sans-serif'
   ChartJS.plugins.register({
-    beforeInit: function(chart, options){
+    beforeInit: function(chart){
       chart.legend.afterFit = function() { this.height += 35 }
     },
-    beforeDraw: (chart, options) => {
+    beforeDraw: (chart) => {
       const ctx = chart.ctx;
       ctx.save();
       ctx.fillStyle = '#2F3136';
@@ -27,9 +27,9 @@ const sortables = { 'cases': null, 'deaths': null, 'active': null, 'recovered': 
 
 const formatNumber = number => String(number).replace(/(.)(?=(\d{3})+$)/g,'$1,')
 
-const createEmbed = (opts) => new Discord.MessageEmbed()
+const createEmbed = (opts, embed) => new Discord.MessageEmbed(embed)
   .setTitle(opts.title || '')
-  .setAuthor(opts.author.name, opts.author.url)
+  .setAuthor(opts.author && opts.author.name || '', opts.author && opts.author.url || '')
   .setDescription(opts.description || '')
   .setThumbnail(opts.thumbnail)
   .setColor(opts.color)
@@ -43,7 +43,7 @@ const createEmbed = (opts) => new Discord.MessageEmbed()
 const help = async (message, args) => {
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID-Bot Help', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by NovelCOVID', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     title: `All commands`,
     fields: [
       { name: 'Help', value: '`cov help`\nshows available commands', inline: true },
@@ -56,9 +56,17 @@ const help = async (message, args) => {
       { name: 'Leaderboard', value: '`cov leaderboard [{property}]`\nshows detailed COVID stats for a US state', inline: true },
       { name: 'Mobility', value: '`cov mobility {country} [{subregion}]`\nshows Apples mobility data in a graph', inline: true },
     ],
+    footer: 'React with ❌ to remove this embed.',
     url: 'https://disease.sh'
   })
-  await message.channel.send(embed)
+  const msg = await message.channel.send(embed)
+  await msg.react('❌')
+  try {
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+      throw new Error()
+  }catch{
+    msg.delete()
+  }
 }
 
 const invite = async message => {
@@ -67,7 +75,14 @@ const invite = async message => {
     author: { name: 'COVID Stats by NovelCOVID', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     description: '[Invite](https://discord.com/api/oauth2/authorize?client_id=707564241279909888&permissions=51200&scope=bot "Invite the bot to your server") | [Support Server](https://discord.gg/sszH4C9 "Get help regarding the bot and the API")'
   })
-  return await message.channel.send(embed)
+  const msg = await message.channel.send(embed)
+  await msg.react('❌')
+  try {
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+      throw new Error()
+  }catch{
+    msg.delete()
+  }
 }
 
 const all = async message => {
@@ -94,10 +109,17 @@ const all = async message => {
       { name: 'Test rate', value: `${(allData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
       { name: 'Last Updated', value: moment(allData.updated).fromNow(), inline: true }
     ],
-    footer: 'Fetched from https://disease.sh',
+    footer: 'React with ❌ to remove this embed.',
     url: 'https://disease.sh'
   })
-  return await message.channel.send(embed)
+  const msg = await message.channel.send(embed)
+  await msg.react('❌')
+  try {
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+      throw new Error()
+  }catch{
+    msg.delete()
+  }
 }
 
 const country = async (message, args) => {
@@ -128,10 +150,17 @@ const country = async (message, args) => {
       { name: 'Test rate', value: `${(countryData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
       { name: 'Last Updated', value: moment(countryData.updated).fromNow(), inline: true }
     ],
-    footer: 'Fetched from https://disease.sh',
+    footer: 'React with ❌ to remove this embed.',
     url: 'https://disease.sh'
   })
-  return await message.channel.send(embed)
+  const msg = await message.channel.send(embed)
+  await msg.react('❌')
+  try {
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+      throw new Error()
+  }catch{
+    msg.delete()
+  }
 }
 
 const graph = async (message, args) => {
@@ -225,10 +254,17 @@ const graph = async (message, args) => {
     description: 'Data is provided by John Hopkins University.',
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
     image: 'attachment://graph.png',
-    footer: 'Fetched from https://disease.sh',
+    footer: 'React with ❌ to remove this embed.',
     url: 'https://disease.sh'
   })
-  return await message.channel.send(embed)
+  const msg = await message.channel.send(embed)
+  await msg.react('❌')
+  try {
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+      throw new Error()
+  }catch{
+    msg.delete()
+  }
 }
 
 const overview = async (message, args) => {
@@ -264,10 +300,17 @@ const overview = async (message, args) => {
     title: `${pieData.country || 'Global'} Overview`,
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
     image: 'attachment://graph.png',
-    footer: 'Fetched from https://disease.sh',
+    footer: 'React with ❌ to remove this embed.',
     url: 'https://disease.sh'
   })
-  return await message.channel.send(embed)
+  const msg = await message.channel.send(embed)
+  await msg.react('❌')
+  try {
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+      throw new Error()
+  }catch{
+    msg.delete()
+  }
 }
 
 const state = async (message, args) => {
@@ -292,10 +335,17 @@ const state = async (message, args) => {
       { name: 'Test rate', value: `${(stateData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
       { name: 'Last Updated', value: moment(stateData.updated).fromNow(), inline: true }
     ],
-    footer: 'Fetched from https://disease.sh',
+    footer: 'React with ❌ to remove this embed.',
     url: 'https://disease.sh'
   })
-  return await message.channel.send(embed)
+  const msg = await message.channel.send(embed)
+  await msg.react('❌')
+  try {
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+      throw new Error()
+  }catch{
+    msg.delete()
+  }
 }
 
 const leaderboard = async (message, args) => {
@@ -307,10 +357,17 @@ const leaderboard = async (message, args) => {
     author: { name: 'COVID Stats by NovelCOVID', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     title: `Top 15 Countries sorted by '${sorter}'`,
     description: leaderboard.map((c, index) => `**${++index}**. ${c.country} \u279C ${(sorter.includes('PerOneMillion') ? String(c[sorter]).replace(/(.)(?=(\d{3})+$)/g,'$1,') : (c[sorter]/allData[sorter]*100).toFixed(2)+' %')}`).join('\n'),
-    footer: 'Fetched from https://disease.sh',
+    footer: 'React with ❌ to remove this embed.',
     url: 'https://disease.sh'
   })
-  return await message.channel.send(embed)
+  const msg = await message.channel.send(embed)
+  await msg.react('❌')
+  try {
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+      throw new Error()
+  }catch{
+    msg.delete()
+  }
 }
 
 const mobility = async (message, args) => {
@@ -396,10 +453,17 @@ const mobility = async (message, args) => {
     description: 'Data is provided by Apple. All values are relative to those from 13th Jan.',
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
     image: 'attachment://graph.png',
-    footer: 'Fetched from https://disease.sh',
+    footer: 'React with ❌ to remove this embed.',
     url: 'https://disease.sh'
   })
-  return await message.channel.send(embed)
+  const msg = await message.channel.send(embed)
+  await msg.react('❌')
+  try {
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+      throw new Error()
+  }catch{
+    msg.delete()
+  }
 }
 
 module.exports = {
