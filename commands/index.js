@@ -62,7 +62,7 @@ const help = async (message, args) => {
   const msg = await message.channel.send(embed)
   await msg.react('❌')
   try {
-    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user === message.author, { max: 1, time: 60000, errors: ['time'] }))
       throw new Error()
   }catch{
     msg.delete()
@@ -78,7 +78,7 @@ const invite = async message => {
   const msg = await message.channel.send(embed)
   await msg.react('❌')
   try {
-    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user === message.author, { max: 1, time: 60000, errors: ['time'] }))
       throw new Error()
   }catch{
     msg.delete()
@@ -115,7 +115,7 @@ const all = async message => {
   const msg = await message.channel.send(embed)
   await msg.react('❌')
   try {
-    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user === message.author, { max: 1, time: 60000, errors: ['time'] }))
       throw new Error()
   }catch{
     msg.delete()
@@ -156,7 +156,7 @@ const country = async (message, args) => {
   const msg = await message.channel.send(embed)
   await msg.react('❌')
   try {
-    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user === message.author, { max: 1, time: 60000, errors: ['time'] }))
       throw new Error()
   }catch{
     msg.delete()
@@ -260,7 +260,7 @@ const graph = async (message, args) => {
   const msg = await message.channel.send(embed)
   await msg.react('❌')
   try {
-    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user === message.author, { max: 1, time: 60000, errors: ['time'] }))
       throw new Error()
   }catch{
     msg.delete()
@@ -306,7 +306,7 @@ const overview = async (message, args) => {
   const msg = await message.channel.send(embed)
   await msg.react('❌')
   try {
-    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user === message.author, { max: 1, time: 60000, errors: ['time'] }))
       throw new Error()
   }catch{
     msg.delete()
@@ -341,7 +341,7 @@ const state = async (message, args) => {
   const msg = await message.channel.send(embed)
   await msg.react('❌')
   try {
-    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user === message.author, { max: 1, time: 60000, errors: ['time'] }))
       throw new Error()
   }catch{
     msg.delete()
@@ -363,7 +363,7 @@ const leaderboard = async (message, args) => {
   const msg = await message.channel.send(embed)
   await msg.react('❌')
   try {
-    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user === message.author, { max: 1, time: 60000, errors: ['time'] }))
       throw new Error()
   }catch{
     msg.delete()
@@ -459,7 +459,7 @@ const mobility = async (message, args) => {
   const msg = await message.channel.send(embed)
   await msg.react('❌')
   try {
-    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user.id === message.author.id, { max: 1, time: 60000, errors: ['time'] }))
+    if (await msg.awaitReactions((reaction, user) => reaction.emoji.name == '❌' && user === message.author, { max: 1, time: 60000, errors: ['time'] }))
       throw new Error()
   }catch{
     msg.delete()

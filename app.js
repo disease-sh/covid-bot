@@ -4,13 +4,13 @@ const Discord = require('discord.js'),
 
 const client = new Discord.Client(),
 	config = require('dotenv').config()
-	
+
 if (config.error) {
 	console.warn('[ERROR]: cannot parse .env file')
 	process.exit(-1)
 }
 
-const prefix = process.env.PREFIX || 'cov'
+const prefix = process.env.PREFIX || 'cov'
 
 client.once('ready', () => {
 	console.log('[INFO]: bot is running')
@@ -18,11 +18,10 @@ client.once('ready', () => {
 })
 
 client.on('message', async message => {
-	const parsed = parser.parse(message.toLowerCase(), prefix,{allowSpaceBeforeCommand: true} )
-	if	(!parsed.success) return;
-	if(commands[parsed.command])
+	const parsed = parser.parse(message.toLowerCase(), prefix, { allowSpaceBeforeCommand: true })
+	if (!parsed.success && commands[parsed.command]) {
 		commands[parsed.command](message, parsed.arguments)
-	
+	}
 })
 
 client.login(process.env.TOKEN)
