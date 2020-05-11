@@ -18,6 +18,7 @@ client.once('ready', () => {
 })
 
 client.on('message', async message => {
+	message.content = message.content.toLowerCase()
 	const parsed = parser.parse(message, prefix, { allowSpaceBeforeCommand: true })
 	if (parsed.success && commands[parsed.command]) {
 		commands[parsed.command](message, parsed.arguments)
