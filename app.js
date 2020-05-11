@@ -18,12 +18,11 @@ client.once('ready', () => {
 })
 
 client.on('message', async message => {
-	const parsed = parser.parse(message, prefix,{allowSpaceBeforeCommand: true} )
+	const parsed = parser.parse(message.toLowerCase(), prefix,{allowSpaceBeforeCommand: true} )
 	if	(!parsed.success) return;
 	if(commands[parsed.command])
 		commands[parsed.command](message, parsed.arguments)
-	else 
-		commands['help'](message)
+	
 })
 
 client.login(process.env.TOKEN)
