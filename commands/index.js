@@ -22,7 +22,7 @@ const setup = (ChartJS) => {
 }
   
 const lineRenderer = new CanvasRenderService(1200, 600, setup)
-const pieRenderer = new CanvasRenderService(700, 600, setup)
+const pieRenderer = new CanvasRenderService(750, 600, setup)
 const sortables = { 'cases': null, 'deaths': null, 'active': null, 'recovered': null, 'todaycases': 'todayCases', 'todaydeaths': 'todayDeaths', 'critical': null, 'tests': null, 'testsperonemillion': 'testsPerOneMillion', 'deathsperonemillion': 'deathsPerOneMillion', 'casesperonemillion': 'casesPerOneMillion' }
 
 const formatNumber = number => String(number).replace(/(.)(?=(\d{3})+$)/g,'$1,')
