@@ -396,6 +396,25 @@ const mobility = async (message, args) => {
   await message.channel.send(embed)
 }
 
+const system = (message, args) => {
+  const { client } = message
+  const embed = createEmbed({
+    color: '#303136',
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    title: 'Statistics',
+    fields: [
+      { name: "Users", value: client.users.cache.size, inline: true },
+      { name: "Guilds", value: client.guilds.cache.size, inline: true },
+      { name: "Channels", value: client.channels.cache.size, inline: true},
+      { name: "Discord.js", value: `v${Discord.version}`, inline: true },
+      { name: "Node.js", value: process.version, inline: true },
+      { name: "Memory", value: `${(process.memoryUsage().rss/ 1024 / 1024).toFixed(2)} MB`, inline: true },
+      { name: "Uptime", value: `${moment(+Date.now()-client.uptime).fromNow({ withoutSuffix: true })}`, inline: true },
+    ]
+  })
+  message.channel.send(embed)
+}
+
 module.exports = {
   help,
   h: help,
@@ -414,5 +433,6 @@ module.exports = {
   leaderboard,
   l: leaderboard,
   mobility,
-  m: mobility
+  m: mobility,
+  system
 }
