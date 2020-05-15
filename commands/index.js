@@ -49,8 +49,8 @@ const help = async (message, args) => {
       { name: 'Help', value: '`cov help`\nshows available commands', inline: true },
       { name: 'Invite', value: '`cov invite`\nadd the bot to your own server', inline: true },
       { name: 'All', value: '`cov all`\nshows global COVID stats', inline: true },
-      { name: 'Country', value: '`cov country {country} [{log|linear}]`\nshows detailed COVID stats for a country', inline: true },
-      { name: 'Graph', value: '`cov graph {country|all}`\nshows a graph with cases, active, deaths and recovered', inline: true },
+      { name: 'Country', value: '`cov country {country}`\nshows detailed COVID stats for a country', inline: true },
+      { name: 'Graph', value: '`cov graph {country|all} [{log|linear}]`\nshows a graph with cases, active, deaths and recovered', inline: true },
       { name: 'Overview', value: '`cov overview {country|all}`\nshows an overview chart with active, deaths and recovered', inline: true },
       { name: 'State', value: '`cov state {state}`\nshows detailed COVID stats for a US state', inline: true },
       { name: 'Leaderboard', value: '`cov leaderboard [{property}]`\nshows detailed COVID stats for a US state', inline: true },
@@ -397,75 +397,80 @@ const mobility = async (message, args) => {
 }
 
 const mobilityHistory = async (message, args) => {
+  if (args.length < 1)
+    return await message.reply('Please specify a country name.')
   const mobData = await api.apple.mobilityData({ country: args[0], subregion: 'All' })
-  const lineData = await api.historical.countries({ country: args[0] })
+  const lineData = await api.historical.countries({ country: args[0], days: -1 })
+  const datasets = [{
+      label: "Walking",
+      yAxisID: 'mobility',
+      borderColor: '#FAE29F',
+      pointBackgroundColor: '#FAE29F',
+      pointRadius: 2,
+      borderWidth: 3,
+      data: mobData.data.map(x => x.walking || 0).splice(9)
+    },{
+      label: "Driving",
+      yAxisID: 'mobility',
+      borderColor: '#7FD99F',
+      pointBackgroundColor: '#7FD99F',
+      pointRadius: 2,
+      borderWidth: 3,
+      data: mobData.data.map(x => x.driving || 0).splice(9)
+    },{
+      label: "Transit",
+      yAxisID: 'mobility',
+      borderColor: '#E26363',
+      pointBackgroundColor: '#E26363',
+      pointRadius: 2,
+      borderWidth: 3,
+      data: mobData.data.map(x => x.transit || 0).splice(9)
+    },
+    {
+      label: "Cases",
+      yAxisID: 'history',
+      borderColor: '#ffffff',
+      pointBackgroundColor: '#ffffff',
+      pointRadius: 2,
+      borderWidth: 3,
+      data: Object.values(lineData.timeline.cases)
+    },
+    {
+      label: "Deaths",
+      yAxisID: 'history',
+      borderColor: '#E26363',
+      pointBackgroundColor: '#E26363',
+      pointRadius: 2,
+      borderWidth: 3,
+      data: Object.values(lineData.timeline.deaths)
+    },
+    {
+      label: "Recovered",
+      yAxisID: 'history',
+      borderColor: '#74D99F',
+      pointBackgroundColor: '#74D99F',
+      pointRadius: 2,
+      borderWidth: 3,
+      data: Object.values(lineData.timeline.recovered)
+    },
+    {
+      label: "Active",
+      yAxisID: 'history',
+      borderColor: '#FAE29F',
+      pointBackgroundColor: '#FAE29F',
+      pointRadius: 2,
+      borderWidth: 3,
+      data: Object.keys(lineData.timeline.cases).map(key => lineData.timeline.cases[key] - lineData.timeline.recovered[key] - lineData.timeline.deaths[key])
+    }
+  ]
+  for (const index in datasets)
+    if (datasets[index].data.filter(x => x).length === 0)
+      datasets.splice(index, 1)
   const buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
-      labels: mobData.data.map(x => x.date),
-      datasets : [
-        {
-          label: "Walking",
-          yAxisID: 'mobility',
-          borderColor: '#FAE29F',
-          pointBackgroundColor: '#FAE29F',
-          pointRadius: 2,
-          borderWidth: 3,
-          data: mobData.data.map(x => x.walking || 0)
-        },{
-          label: "Driving",
-          yAxisID: 'mobility',
-          borderColor: '#7FD99F',
-          pointBackgroundColor: '#7FD99F',
-          pointRadius: 2,
-          borderWidth: 3,
-          data: mobData.data.map(x => x.driving || 0)
-        },{
-          label: "Transit",
-          yAxisID: 'mobility',
-          borderColor: '#E26363',
-          pointBackgroundColor: '#E26363',
-          pointRadius: 2,
-          borderWidth: 3,
-          data: mobData.data.map(x => x.transit || 0)
-        },
-        {
-          label: "Cases",
-          yAxisID: 'history',
-          borderColor: '#ffffff',
-          pointBackgroundColor: '#ffffff',
-          pointRadius: 2,
-          borderWidth: 3,
-          data: Object.values(lineData.cases)
-        },
-        {
-          label: "Deaths",
-          yAxisID: 'history',
-          borderColor: '#E26363',
-          pointBackgroundColor: '#E26363',
-          pointRadius: 2,
-          borderWidth: 3,
-          data: Object.values(lineData.deaths)
-        },
-        {
-          label: "Recovered",
-          yAxisID: 'history',
-          borderColor: '#74D99F',
-          pointBackgroundColor: '#74D99F',
-          pointRadius: 2,
-          borderWidth: 3,
-          data: Object.values(lineData.recovered)
-        },
-        {
-          label: "Active",
-          yAxisID: 'history',
-          borderColor: '#FAE29F',
-          pointBackgroundColor: '#FAE29F',
-          pointRadius: 2,
-          borderWidth: 3,
-          data: Object.keys(lineData.cases).map(key => lineData.cases[key] - lineData.recovered[key] - lineData.deaths[key])
-        }
-      ]
+      labels: mobData.data.map(x => x.date).splice(9),
+      datasets
     },
     options: {
       scales: {
@@ -498,6 +503,7 @@ const mobilityHistory = async (message, args) => {
         }, {
           id: 'history',
           display: true,
+          type: args[1] === 'log' ? 'logarithmic' : 'linear',
           ticks : {
             fontSize: 17.5,
             callback: formatNumber
