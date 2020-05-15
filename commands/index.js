@@ -174,7 +174,7 @@ const graph = async (message, args) => {
   for (const index in datasets)
     if (datasets[index].data.filter(x => x).length === 0)
       datasets.splice(index, 1)
-  buffer = await lineRenderer.renderToBuffer({
+  const buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
       labels: Object.keys(lineData.timeline.cases),
@@ -235,7 +235,7 @@ const overview = async (message, args) => {
   const pieData = ['global', 'all'].includes(args[0].toLowerCase()) ? await api.all() : await api.countries({ country: args[0] })
   if(pieData.message) 
     return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
-  buffer = await pieRenderer.renderToBuffer({
+  const buffer = await pieRenderer.renderToBuffer({
     type: 'pie',
     data: {
       labels: ['Active', 'Recovered', 'Deaths'],
@@ -339,7 +339,7 @@ const mobility = async (message, args) => {
   for(const index in datasets)
     if(datasets[index].data.filter(x => x).length === 0)
       datasets.splice(index, 1)
-  buffer = await lineRenderer.renderToBuffer({
+  const buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
       labels: mobData.data.map(x => x.date),
@@ -396,6 +396,140 @@ const mobility = async (message, args) => {
   await message.channel.send(embed)
 }
 
+const mobilityHistory = async (message, args) => {
+  const mobData = await api.apple.mobilityData({ country: args[0], subregion: 'All' })
+  const lineData = await api.historical.countries({ country: args[0] })
+  const buffer = await lineRenderer.renderToBuffer({
+    type: 'line',
+    data: {
+      labels: mobData.data.map(x => x.date),
+      datasets : [
+        {
+          label: "Walking",
+          yAxisID: 'mobility',
+          borderColor: '#FAE29F',
+          pointBackgroundColor: '#FAE29F',
+          pointRadius: 2,
+          borderWidth: 3,
+          data: mobData.data.map(x => x.walking || 0)
+        },{
+          label: "Driving",
+          yAxisID: 'mobility',
+          borderColor: '#7FD99F',
+          pointBackgroundColor: '#7FD99F',
+          pointRadius: 2,
+          borderWidth: 3,
+          data: mobData.data.map(x => x.driving || 0)
+        },{
+          label: "Transit",
+          yAxisID: 'mobility',
+          borderColor: '#E26363',
+          pointBackgroundColor: '#E26363',
+          pointRadius: 2,
+          borderWidth: 3,
+          data: mobData.data.map(x => x.transit || 0)
+        },
+        {
+          label: "Cases",
+          yAxisID: 'history',
+          borderColor: '#ffffff',
+          pointBackgroundColor: '#ffffff',
+          pointRadius: 2,
+          borderWidth: 3,
+          data: Object.values(lineData.cases)
+        },
+        {
+          label: "Deaths",
+          yAxisID: 'history',
+          borderColor: '#E26363',
+          pointBackgroundColor: '#E26363',
+          pointRadius: 2,
+          borderWidth: 3,
+          data: Object.values(lineData.deaths)
+        },
+        {
+          label: "Recovered",
+          yAxisID: 'history',
+          borderColor: '#74D99F',
+          pointBackgroundColor: '#74D99F',
+          pointRadius: 2,
+          borderWidth: 3,
+          data: Object.values(lineData.recovered)
+        },
+        {
+          label: "Active",
+          yAxisID: 'history',
+          borderColor: '#FAE29F',
+          pointBackgroundColor: '#FAE29F',
+          pointRadius: 2,
+          borderWidth: 3,
+          data: Object.keys(lineData.cases).map(key => lineData.cases[key] - lineData.recovered[key] - lineData.deaths[key])
+        }
+      ]
+    },
+    options: {
+      scales: {
+        xAxes: [{
+          display: true,
+          ticks: {
+            fontSize: 17.5,
+            callback: (label) => moment(label, 'YYYY-MM-DD').format('DD MMM'),
+            padding: 10
+          },
+          gridLines: {
+            zeroLineColor: '#fff',
+            zeroLineWidth: 2
+          }
+        }],
+        yAxes: [{
+          id: 'mobility',
+          display: true,
+          ticks: {
+            fontSize: 17.5,
+            callback: (label) => {
+              label += 100
+              return `${label == 100 ? '' : (label > 100 ? '+' : '-')}${Math.abs(label-100)} %`
+            }
+          },
+          gridLines: {
+            zeroLineColor: '#fff',
+            zeroLineWidth: 2
+          }
+        }, {
+          id: 'history',
+          display: true,
+          ticks : {
+            fontSize: 17.5,
+            callback: formatNumber
+          },
+          gridLines: {
+            zeroLineColor: '#fff',
+            zeroLineWidth: 2
+          }
+        }]
+      },
+      legend: {
+        display: true,
+        labels: {
+          usePointStyle: true,
+          padding: 40,
+          fontSize: 30
+        }
+      }
+    }
+  })
+  const embed = createEmbed({
+    color: '#303136',
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    title: `${mobData.country}`,
+    description: 'Mobility Data + History Data',
+    files: [new Discord.MessageAttachment(buffer, 'graph.png')],
+    image: 'attachment://graph.png',
+    url: 'https://pufler.dev'
+  })
+  await message.channel.send(embed)
+}
+
 const system = (message, args) => {
   const { client } = message
   const embed = createEmbed({
@@ -434,5 +568,6 @@ module.exports = {
   l: leaderboard,
   mobility,
   m: mobility,
+  mh: mobilityHistory,
   system
 }
