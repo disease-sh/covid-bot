@@ -145,7 +145,7 @@ const graph = async (message, args) => {
     pointBackgroundColor: '#ffffff',
     pointRadius: 2,
     borderWidth: 3,
-    data: Object.keys(lineData.timeline.cases).map(key => lineData.timeline.cases[key])
+    data: Object.values(lineData.timeline.cases)
   },
   {
     label: "Deaths",
@@ -153,7 +153,7 @@ const graph = async (message, args) => {
     pointBackgroundColor: '#E26363',
     pointRadius: 2,
     borderWidth: 3,
-    data: Object.keys(lineData.timeline.deaths).map(key => lineData.timeline.deaths[key])
+    data: Object.values(lineData.timeline.deaths)
   },
   {
     label: "Recovered",
@@ -161,7 +161,7 @@ const graph = async (message, args) => {
     pointBackgroundColor: '#74D99F',
     pointRadius: 2,
     borderWidth: 3,
-    data: Object.keys(lineData.timeline.recovered).map(key => lineData.timeline.recovered[key])
+    data: Object.values(lineData.timeline.recovered)
   },
   {
     label: "Active",
