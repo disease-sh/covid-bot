@@ -55,6 +55,7 @@ const help = async (message, args) => {
       { name: 'State', value: '`cov state {state}`\nshows detailed COVID stats for a US state', inline: true },
       { name: 'Leaderboard', value: '`cov leaderboard [{property}]`\nshows detailed COVID stats for a US state', inline: true },
       { name: 'Mobility', value: '`cov mobility {country} [{subregion}]`\nshows Apples mobility data in a graph', inline: true },
+      { name: 'Mobility + History', value: '`cov mh {country}`\nshows Apples mobility data + historical timeline in a graph', inline: true },
     ],
     url: 'https://pufler.dev'
   })
