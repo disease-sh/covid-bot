@@ -1,5 +1,5 @@
 const Discord = require('discord.js'),
-  api = require('covidapi'),
+  api = require('novelcovid'),
 	moment = require('moment'),
   { CanvasRenderService } = require('chartjs-node-canvas')
 
@@ -56,6 +56,8 @@ const help = async (message, args) => {
       { name: 'Leaderboard', value: '`cov leaderboard [{property}]`\nshows detailed COVID stats for a US state', inline: true },
       { name: 'Mobility', value: '`cov mobility {country} [{subregion}]`\nshows Apples mobility data in a graph', inline: true },
       { name: 'Mobility + History', value: '`cov mh {country}`\nshows Apples mobility data + historical timeline in a graph', inline: true },
+      { name: 'Country Compare', value: '`cov compare {country} {country}`\nshows a detailed comparison of 2 countries', inline: true },
+      { name: '\u200B', value: '\u200B', inline: true },
     ],
     url: 'https://pufler.dev'
   })
@@ -91,9 +93,13 @@ const all = async message => {
       { name: 'Recovered', value: `${formatNumber(allData.recovered)}\n(${(allData.todayRecovereds >= 0 ? "+":"-")+String(Math.abs(allData.todayRecovereds)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
       { name: 'Critical', value: `${formatNumber(allData.critical)}\n(${(allData.todayCriticals >= 0 ? "+":"-")+String(Math.abs(allData.todayCriticals)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
       { name: 'Tests', value: `${formatNumber(allData.tests)}\n(${(allData.todayTests >= 0 ? "+":"-")+String(Math.abs(allData.todayTests)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Population', value: formatNumber(allData.population), inline: true },
       { name: 'Infection Rate', value: `${(allData.casesPerOneMillion/10000).toFixed(4)} %`, inline: true },
-      { name: 'Fatality rate', value: `${(allData.deathsPerOneMillion/10000).toFixed(4)} %`, inline: true },
-      { name: 'Test rate', value: `${(allData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Fatality Rate', value: `${(allData.deathsPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Critical Rate', value: `${(allData.criticalPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Recovery Rate', value: `${(allData.recoveredPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Test Rate', value: `${(allData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Infected Countries', value: allData.affectedCountries, inline: true },
       { name: 'Last Updated', value: moment(allData.updated).fromNow(), inline: true }
     ],
     url: 'https://pufler.dev'
@@ -124,9 +130,12 @@ const country = async (message, args) => {
       { name: 'Recovered', value: `${formatNumber(countryData.recovered)}\n(${(countryData.todayRecovereds >= 0 ? "+":"-")+String(Math.abs(countryData.todayRecovereds)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
       { name: 'Critical', value: `${formatNumber(countryData.critical)}\n(${(countryData.todayCriticals >= 0 ? "+":"-")+String(Math.abs(countryData.todayCriticals)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
       { name: 'Tests', value: `${formatNumber(countryData.tests)}\n(${(countryData.todayTests >= 0 ? "+":"-")+String(Math.abs(countryData.todayTests)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Population', value: formatNumber(countryData.population), inline: true },
       { name: 'Infection Rate', value: `${(countryData.casesPerOneMillion/10000).toFixed(4)} %`, inline: true },
-      { name: 'Fatality rate', value: `${(countryData.deathsPerOneMillion/10000).toFixed(4)} %`, inline: true },
-      { name: 'Test rate', value: `${(countryData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Fatality Rate', value: `${(countryData.deathsPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Critical Rate', value: `${(countryData.criticalPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Recovery Rate', value: `${(countryData.recoveredPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Test Rate', value: `${(countryData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
       { name: 'Last Updated', value: moment(countryData.updated).fromNow(), inline: true }
     ],
     url: 'https://pufler.dev'
@@ -287,7 +296,7 @@ const state = async (message, args) => {
       { name: 'Deaths', value: `${formatNumber(stateData.deaths)}\n(${(stateData.todayDeaths >= 0 ? "+":"-")+String(Math.abs(stateData.todayDeaths)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
       { name: 'Active', value: `${formatNumber(stateData.active)}\n(${(stateData.todayActives >= 0 ? "+":"-")+String(Math.abs(stateData.todayActives)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
       { name: 'Tests', value: `${formatNumber(stateData.tests)}\n(${(stateData.todayTests >= 0 ? "+":"-")+String(Math.abs(stateData.todayTests)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
-      { name: 'Test rate', value: `${(stateData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Test Rate', value: `${(stateData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
       { name: 'Last Updated', value: moment(stateData.updated).fromNow(), inline: true }
     ],
     url: 'https://pufler.dev'
@@ -537,6 +546,43 @@ const mobilityHistory = async (message, args) => {
   await message.channel.send(embed)
 }
 
+const compare = async (message, args) => {
+  if (args.length < 2)
+    return await message.reply('Please specify two country names.')
+  args = args.splice(0, 2)
+  const yesterday = await api.yesterday.countries({ country: args})
+  let data = await api.countries({ country: args })
+  data = data.map((country, i) => ({
+    ...country,
+    todayActives: country.active - yesterday[i].active,
+    todayRecovereds: country.recovered - yesterday[i].recovered,
+    todayCriticals: country.critical - yesterday[i].critical,
+    todayTests: country.tests - yesterday[i].tests,
+  }))
+  const embed = createEmbed({
+    color: '#303136', 
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    title: `Comparison between ${data[0].country} & ${data[1].country}`,
+    fields: [
+      { name: 'Cases', value: `**${data[0].country}**: ${formatNumber(data[0].cases)} (${(data[0].todayCases >= 0 ? "+":"-")+String(Math.abs(data[0].todayCases)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})\n**${data[1].country}**: ${formatNumber(data[1].cases)} (${(data[1].todayCases >= 0 ? "+":"-")+String(Math.abs(data[1].todayCases)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Deaths', value: `**${data[0].country}**: ${formatNumber(data[0].deaths)} (${(data[0].todayDeaths >= 0 ? "+":"-")+String(Math.abs(data[0].todayDeaths)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})\n**${data[1].country}**: ${formatNumber(data[1].deaths)}\n(${(data[1].todayDeaths >= 0 ? "+":"-")+String(Math.abs(data[1].todayDeaths)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Active', value: `**${data[0].country}**: ${formatNumber(data[0].active)} (${(data[0].todayActives >= 0 ? "+":"-")+String(Math.abs(data[0].todayActives)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})\n**${data[1].country}**: ${formatNumber(data[1].active)} (${(data[1].todayActives >= 0 ? "+":"-")+String(Math.abs(data[1].todayActives)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Recovered', value: `**${data[0].country}**: ${formatNumber(data[0].recovered)} (${(data[0].todayRecovereds >= 0 ? "+":"-")+String(Math.abs(data[0].todayRecovereds)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})\n**${data[1].country}**: ${formatNumber(data[1].recovered)}\n(${(data[1].todayRecovereds >= 0 ? "+":"-")+String(Math.abs(data[1].todayRecovereds)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Critical', value: `**${data[0].country}**: ${formatNumber(data[0].critical)} (${(data[0].todayCriticals >= 0 ? "+":"-")+String(Math.abs(data[0].todayCriticals)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})\n**${data[1].country}**: ${formatNumber(data[1].critical)}\n(${(data[1].todayCriticals >= 0 ? "+":"-")+String(Math.abs(data[1].todayCriticals)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Tests', value: `**${data[0].country}**: ${formatNumber(data[0].tests)} (${(data[0].todayTests >= 0 ? "+":"-")+String(Math.abs(data[0].todayTests)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})\n**${data[1].country}**: ${formatNumber(data[1].tests)}\n(${(data[1].todayTests >= 0 ? "+":"-")+String(Math.abs(data[1].todayTests)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+      { name: 'Population', value: `**${data[0].country}**: ${formatNumber(data[0].population)}\n**${data[1].country}**: ${formatNumber(data[1].population)}`, inline: true },
+      { name: 'Infection Rate', value: `**${data[0].country}**: ${(data[0].casesPerOneMillion/10000).toFixed(4)} %\n**${data[1].country}**: ${(data[1].casesPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Fatality Rate', value: `**${data[0].country}**: ${(data[0].deathsPerOneMillion/10000).toFixed(4)} %\n**${data[1].country}**: ${(data[1].deathsPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Critical Rate', value: `**${data[0].country}**: ${(data[0].criticalPerOneMillion/10000).toFixed(4)} %\n**${data[1].country}**: ${(data[1].criticalPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Recovery Rate', value: `**${data[0].country}**: ${(data[0].recoveredPerOneMillion/10000).toFixed(4)} %\n**${data[1].country}**: ${(data[1].recoveredPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Test Rate', value: `**${data[0].country}**: ${(data[0].testsPerOneMillion/10000).toFixed(4)} %\n**${data[1].country}**: ${(data[1].testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
+      { name: 'Last Updated', value: moment(data[0].updated).fromNow() },
+    ],
+    url: 'https://pufler.dev'
+  })
+  await message.channel.send(embed)
+}
+
 const system = (message, args) => {
   const { client } = message
   const embed = createEmbed({
@@ -576,5 +622,8 @@ module.exports = {
   mobility,
   m: mobility,
   mh: mobilityHistory,
+  diff: compare,
+  compare,
+  sys: system,
   system
 }
