@@ -40,7 +40,7 @@ const createEmbed = (opts, embed) => new Discord.MessageEmbed(embed)
   .setTimestamp()
   .setFooter(opts.footer || '')
 
-const help = async (message, args) => {
+const help = async (message, _args) => {
   const embed = createEmbed({
     color: '#303136', 
     author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
@@ -572,7 +572,7 @@ const compare = async (message, args) => {
       { name: 'Tests', value: `**${data[0].country}**: ${formatNumber(data[0].tests)} (${(data[0].todayTests >= 0 ? "+":"-")+String(Math.abs(data[0].todayTests)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})\n**${data[1].country}**: ${formatNumber(data[1].tests)} (${(data[1].todayTests >= 0 ? "+":"-")+String(Math.abs(data[1].todayTests)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
       { name: 'Population', value: `**${data[0].country}**: ${formatNumber(data[0].population)}\n**${data[1].country}**: ${formatNumber(data[1].population)}`, inline: true },
       { name: 'Infection Rate', value: `**${data[0].country}**: ${(data[0].casesPerOneMillion/10000).toFixed(4)} %\n**${data[1].country}**: ${(data[1].casesPerOneMillion/10000).toFixed(4)} %`, inline: true },
-      { name: 'Fatality Rate', value: `**${data[0].country}**: ${(data[0].deaths/data[0].cases*100).toFixed(4)} %\n**${data[1].country}**: ${(data[1].deaths/data[1].cases*100)} %`, inline: true },
+      { name: 'Fatality Rate', value: `**${data[0].country}**: ${(data[0].deaths/data[0].cases*100).toFixed(4)} %\n**${data[1].country}**: ${(data[1].deaths/data[1].cases*100).toFixed(4)} %`, inline: true },
       { name: 'Critical Rate', value: `**${data[0].country}**: ${(data[0].critical/data[0].active*100).toFixed(4)} %\n**${data[1].country}**: ${(data[1].critical/data[1].active*100).toFixed(4)} %`, inline: true },
       { name: 'Recovery Rate', value: `**${data[0].country}**: ${(data[0].recovered/data[0].cases*100).toFixed(4)} %\n**${data[1].country}**: ${(data[1].recovered/data[1].cases*100).toFixed(4)} %`, inline: true },
       { name: 'Test Rate', value: `**${data[0].country}**: ${(data[0].testsPerOneMillion/10000).toFixed(4)} %\n**${data[1].country}**: ${(data[1].testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
@@ -583,7 +583,7 @@ const compare = async (message, args) => {
   await message.channel.send(embed)
 }
 
-const system = (message, args) => {
+const system = (message, _args) => {
   const { client } = message
   const embed = createEmbed({
     color: '#303136',
