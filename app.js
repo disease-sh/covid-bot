@@ -2,7 +2,6 @@ const Discord = require('discord.js'),
 	parser = require('discord-command-parser'),
 	{ commands, analytics } = require('./commands')
 
-const analytics = { }
 const client = new Discord.Client({
 	presence: {
 		status: "online",
