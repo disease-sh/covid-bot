@@ -110,10 +110,10 @@ const all = async message => {
 const country = async (message, args) => {
   if (args.length < 1)
     return await message.channel.send('Please specify a country name.')
-  const countryData = await api.countries({ country: args[0]})
+  const countryData = await api.countries({ country: args.join(' ')})
   const yesterdayCountryData = await api.yesterday.countries({ country: args })
   if(countryData.message || yesterdayCountryData.message) 
-    return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
+    return await message.channel.send(countryData.message || yesterdayCountryData.message)
   countryData.todayActives = countryData.active - yesterdayCountryData.active
   countryData.todayRecovereds = countryData.recovered - yesterdayCountryData.recovered
   countryData.todayCriticals = countryData.critical - yesterdayCountryData.critical
@@ -148,7 +148,7 @@ const graph = async (message, args) => {
     return await message.channel.send('Please specify a country name.')
   const lineData = ['global', 'all'].includes(args[0].toLowerCase()) ? {timeline: await api.historical.all({days: -1})} : await api.historical.countries({ country: args[0], days: -1 })
   if (lineData.message) 
-    return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
+    return await message.channel.send(lineData.message)
   const datasets = [{
     label: "Cases",
     borderColor: '#ffffff',
@@ -206,7 +206,7 @@ const graph = async (message, args) => {
         }],
         yAxes: [{
           display: true,
-          type: args[1] === 'log' ? 'logarithmic' : 'linear',
+          type: args[args.length-1] === 'log' ? 'logarithmic' : 'linear',
           ticks: {
             fontSize: 17.5,
             callback: formatNumber 
@@ -244,7 +244,7 @@ const overview = async (message, args) => {
     return await message.reply('Please specify a country name.')
   const pieData = ['global', 'all'].includes(args[0].toLowerCase()) ? await api.all() : await api.countries({ country: args[0] })
   if(pieData.message) 
-    return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
+    return await message.channel.send(pieData.message)
   const buffer = await pieRenderer.renderToBuffer({
     type: 'pie',
     data: {
@@ -280,10 +280,10 @@ const overview = async (message, args) => {
 const state = async (message, args) => {
   if (args.length < 1)
     return await message.reply('Please specify a state name.')
-  const stateData = await api.states({ state: args[0] })
-  const yesterdayStateData = await api.yesterday.states({ state: args[0] })
+  const stateData = await api.states({ state: args.join(' ') })
+  const yesterdayStateData = await api.yesterday.states({ state: args.join(' ') })
   if(stateData.message || yesterdayStateData.message) 
-    return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
+    return await message.channel.send(stateData.message || yesterdayStateData.message)
   stateData.todayActives = stateData.active - yesterdayStateData.active
   stateData.todayTests = stateData.tests - yesterdayStateData.tests
   const embed = createEmbed({
@@ -323,7 +323,7 @@ const mobility = async (message, args) => {
     return await message.reply('Please specify a country name.')
   const mobData = await api.apple.mobilityData({ country: args[0], subregion: args[1] || 'All'})
   if(mobData.message) 
-    return await message.channel.send(`Could not find '${args[0]}' or it does not have any cases yet.`)
+    return await message.channel.send(mobData.message)
   const datasets = [{
     label: "Walking",
     borderColor: '#FAE29F',
@@ -411,6 +411,8 @@ const mobilityHistory = async (message, args) => {
     return await message.reply('Please specify a country name.')
   const mobData = await api.apple.mobilityData({ country: args[0], subregion: 'All' })
   const lineData = await api.historical.countries({ country: args[0], days: -1 })
+  if(lineData.message || mobData.message) 
+    return await message.channel.send(lineData.message || mobData.message)
   const datasets = [{
       label: "Walking",
       yAxisID: 'mobility',
@@ -552,6 +554,8 @@ const compare = async (message, args) => {
   args = args.splice(0, 2)
   const yesterday = await api.yesterday.countries({ country: args})
   let data = await api.countries({ country: args })
+  if (data.find(c => c.message)) 
+    return await message.channel.send(data.map(c => c.message).filter(x => x))
   data = data.map((country, i) => ({
     ...country,
     todayActives: country.active - yesterday[i].active,
