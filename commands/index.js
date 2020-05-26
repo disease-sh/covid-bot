@@ -612,7 +612,7 @@ const analytics = async (message) => {
     color: '#303136',
     author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
     title: 'Analytics',
-    fields: Object.entries(_analytics).map(e => ({ name: e[0], value: `${e[1]}x used` }))
+    fields: Object.entries(_analytics).map(e => ({ name: e[0], value: `${e[1]}x used`, inline: true }))
   })
   await message.channel.send(embed)
 }
