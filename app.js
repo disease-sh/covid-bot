@@ -1,7 +1,8 @@
 const Discord = require('discord.js'),
 	parser = require('discord-command-parser'),
-	commands = require('./commands')
+	{ commands, analytics } = require('./commands')
 
+const analytics = { }
 const client = new Discord.Client({
 	presence: {
 		status: "online",
@@ -66,6 +67,7 @@ client.on('message', async message => {
 	const parsed = parser.parse(message, prefix, { allowSpaceBeforeCommand: true })
 	if (parsed.success && commands[parsed.command]) {
 		commands[parsed.command](message, parsed.arguments)
+		analytics[parsed.command] ? analytics[parsed.command]++ : (analytics[parsed.command] = 1)
 	}
 })
 

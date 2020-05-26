@@ -3,6 +3,7 @@ const Discord = require('discord.js'),
 	moment = require('moment'),
   { CanvasRenderService } = require('chartjs-node-canvas')
 
+const _analytics = { }
 const setup = (ChartJS) => {
   ChartJS.defaults.global.defaultFontColor='#fff'
   ChartJS.defaults.global.defaultFontStyle='bold'
@@ -603,31 +604,46 @@ const system = (message, _args) => {
       { name: "Uptime", value: `${moment(+Date.now()-client.uptime).fromNow({ withoutSuffix: true })}`, inline: true },
     ]
   })
-  message.channel.send(embed)
+  await message.channel.send(embed)
+}
+
+const analytics = async (message) => {
+  const embed = createEmbed({
+    color: '#303136',
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    title: 'Analytics',
+    fields: Object.entries(_analytics).map(e => ({ name: e[0], value: `${e[1]}x used` }))
+  })
+  await message.channel.send(embed)
 }
 
 module.exports = {
-  help,
-  h: help,
-  invite,
-  i: invite,
-  all,
-  a: all,
-  country,
-  c: country,
-  graph,
-  g: graph,
-  overview,
-  o: overview,
-  state,
-  s: state,
-  leaderboard,
-  l: leaderboard,
-  mobility,
-  m: mobility,
-  mh: mobilityHistory,
-  diff: compare,
-  compare,
-  sys: system,
-  system
+  commands: {
+    help,
+    h: help,
+    invite,
+    i: invite,
+    all,
+    a: all,
+    country,
+    c: country,
+    graph,
+    g: graph,
+    overview,
+    o: overview,
+    state,
+    s: state,
+    leaderboard,
+    l: leaderboard,
+    mobility,
+    m: mobility,
+    mh: mobilityHistory,
+    diff: compare,
+    compare,
+    sys: system,
+    system,
+    an: analytics,
+    analytics
+  },
+  analytics: _analytics
 }
