@@ -588,7 +588,7 @@ const compare = async (message, args) => {
   await message.channel.send(embed)
 }
 
-const system = (message, _args) => {
+const system = async (message, _args) => {
   const { client } = message
   const embed = createEmbed({
     color: '#303136',
