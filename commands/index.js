@@ -1,4 +1,4 @@
-const Discord = require('discord.js'),
+const Discord = require('discord.js-light'),
   api = require('novelcovid'),
 	moment = require('moment'),
   { CanvasRenderService } = require('chartjs-node-canvas')

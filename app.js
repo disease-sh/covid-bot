@@ -1,4 +1,4 @@
-const Discord = require('discord.js'),
+const Discord = require('discord.js-light'),
 	parser = require('discord-command-parser'),
 	{ commands, analytics } = require('./commands')
 

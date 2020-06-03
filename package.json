@@ -8,6 +8,7 @@
     "chartjs-node-canvas": "3.0.6",
     "discord-command-parser": "1.4.3",
     "discord.js": "12.2.0",
+    "discord.js-light": "2.6.3",
     "dotenv": "8.2.0",
     "moment": "2.25.3",
     "novelcovid": "2.1.0"
