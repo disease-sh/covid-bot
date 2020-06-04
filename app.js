@@ -71,3 +71,9 @@ client.on('message', async message => {
 })
 
 client.login(process.env.TOKEN)
+
+setInterval(async () => {
+	await client.guilds.cache.clear()
+	await client.channels.cache.clear()
+	await client.users.cache.clear()
+}, 120000)
