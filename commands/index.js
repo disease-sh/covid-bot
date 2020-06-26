@@ -182,14 +182,11 @@ const graph = async (message, args) => {
     borderWidth: 3,
     data: Object.keys(lineData.timeline.cases).map(key => lineData.timeline.cases[key] - lineData.timeline.recovered[key] - lineData.timeline.deaths[key])
   }]
-  for (const index in datasets)
-    if (datasets[index].data.filter(x => x).length === 0)
-      datasets.splice(index, 1)
   const buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
       labels: Object.keys(lineData.timeline.cases),
-      datasets
+      datasets: datasets.filter(d => d.data.filter(x => x).length)
     },
     options: {
       scales: {
@@ -347,14 +344,11 @@ const mobility = async (message, args) => {
     borderWidth: 3,
     data: mobData.data.map(x => x.transit || 0)
   }]
-  for(const index in datasets)
-    if(datasets[index].data.filter(x => x).length === 0)
-      datasets.splice(index, 1)
   const buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
       labels: mobData.data.map(x => x.date),
-      datasets
+      datasets: datasets.filter(d => d.data.filter(x => x).length)
     },
     options: {
       scales: {
@@ -476,14 +470,11 @@ const mobilityHistory = async (message, args) => {
       data: Object.keys(lineData.timeline.cases).map(key => lineData.timeline.cases[key] - lineData.timeline.recovered[key] - lineData.timeline.deaths[key])
     }
   ]
-  for (const index in datasets)
-    if (datasets[index].data.filter(x => x).length === 0)
-      datasets.splice(index, 1)
   const buffer = await lineRenderer.renderToBuffer({
     type: 'line',
     data: {
       labels: mobData.data.map(x => x.date).splice(9),
-      datasets
+      datasets: datasets.filter(d => d.data.filter(x => x).length)
     },
     options: {
       scales: {

@@ -57,9 +57,7 @@ if (config.error) {
 
 const prefix = process.env.PREFIX || 'cov'
 
-client.once('ready', () => {
-	console.log('[INFO]: bot is running')
-})
+client.once('ready', () => console.log('[INFO]: bot is running'))
 
 client.on('message', async message => {
 	message.content = message.content.toLowerCase()
