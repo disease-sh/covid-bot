@@ -14,7 +14,7 @@ const client = new Discord.Client({
 	restTimeOffset: 100,
 	partials: ["MESSAGE", "CHANNEL", "REACTION"],
 	ws: {
-		Intents: ["MESSAGE_CREATE", "MESSAGE_UPDATE", "GUILD_MESSAGE_REACTIONS"],
+		Intents: ["MESSAGE_CREATE", "MESSAGE_UPDATE"],
 	},
 	disabledEvents: [
 		"GUILD_MEMBER_ADD",
@@ -28,6 +28,7 @@ const client = new Discord.Client({
 		"GUILD_BAN_ADD",
 		"GUILD_BAN_REMOVE",
 		"GUILD_EMOJIS_UPDATE",
+		"GUILD_MESSAGE_REACTIONS",
 		"CHANNEL_PINS_UPDATE",
 		"CHANNEL_CREATE",
 		"CHANNEL_DELETE",
