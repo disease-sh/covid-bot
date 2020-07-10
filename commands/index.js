@@ -44,7 +44,7 @@ const createEmbed = (opts, embed) => new Discord.MessageEmbed(embed)
 const help = async (message, _args) => {
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     title: `All commands`,
     fields: [
       { name: 'Help', value: '`cov help`\nshows available commands', inline: true },
@@ -68,7 +68,7 @@ const help = async (message, _args) => {
 const invite = async message => {
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     title: `Invite`,
     url: 'https://discord.com/api/oauth2/authorize?client_id=707564241279909888&permissions=51200&scope=bot'
   })
@@ -84,7 +84,7 @@ const all = async message => {
   allData.todayTests = allData.tests - yesterdayAllData.tests
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     thumbnail: 'https://i2x.ai/wp-content/uploads/2018/01/flag-global.jpg',
     title: 'Global Data',
     fields: [
@@ -121,7 +121,7 @@ const country = async (message, args) => {
   countryData.todayTests = countryData.tests - yesterdayCountryData.tests
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     thumbnail: countryData.countryInfo.flag,
     title: `${countryData.country}, ${countryData.continent}`,
     fields: [
@@ -227,7 +227,7 @@ const graph = async (message, args) => {
   })
   const embed = createEmbed({
     color: '#303136',
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     title: `${lineData.country || 'Global'} Timeline`,
     description: 'Data is provided by John Hopkins University.',
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
@@ -266,7 +266,7 @@ const overview = async (message, args) => {
   })
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     title: `${pieData.country || 'Global'} Overview`,
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
     image: 'attachment://graph.png',
@@ -286,7 +286,7 @@ const state = async (message, args) => {
   stateData.todayTests = stateData.tests - yesterdayStateData.tests
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     thumbnail: 'https://disease.sh/assets/img/flags/us.png',
     title: `${stateData.state}, USA`,
     fields: [
@@ -308,7 +308,7 @@ const leaderboard = async (message, args) => {
   const leaderboard = (await api.countries({ sort: sorter })).splice(0, 15)
   const embed = createEmbed({
     color: '#303136',
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     title: `Top 15 Countries sorted by '${sorter}'`,
     description: leaderboard.map((c, index) => `**${++index}**. ${c.country} \u279C ${(sorter.includes('PerOneMillion') ? String(c[sorter]).replace(/(.)(?=(\d{3})+$)/g,'$1,') : (c[sorter]/allData[sorter]*100).toFixed(2)+' %')}`).join('\n'),
     url: 'https://pufler.dev'
@@ -391,7 +391,7 @@ const mobility = async (message, args) => {
   })
   const embed = createEmbed({
     color: '#303136',
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     title: `${mobData.country}, ${mobData.subregion} Mobility Data`,
     description: 'Data is provided by Apple. All values are relative to those from 13th Jan.',
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
@@ -530,7 +530,7 @@ const mobilityHistory = async (message, args) => {
   })
   const embed = createEmbed({
     color: '#303136',
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     title: `${mobData.country}`,
     description: 'Mobility Data + History Data',
     files: [new Discord.MessageAttachment(buffer, 'graph.png')],
@@ -557,7 +557,7 @@ const compare = async (message, args) => {
   }))
   const embed = createEmbed({
     color: '#303136', 
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     title: `Comparison between ${data[0].country} & ${data[1].country}`,
     fields: [
       { name: 'Cases', value: `**${data[0].country}**: ${formatNumber(data[0].cases)} (${(data[0].todayCases >= 0 ? "+":"-")+String(Math.abs(data[0].todayCases)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})\n**${data[1].country}**: ${formatNumber(data[1].cases)} (${(data[1].todayCases >= 0 ? "+":"-")+String(Math.abs(data[1].todayCases)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
@@ -584,7 +584,7 @@ const system = async (message, _args) => {
   const info = await client.getInfo()
   const embed = createEmbed({
     color: '#303136',
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     title: 'Statistics',
     fields: [
       { name: "Member", value: info.memberCount, inline: true },
@@ -604,7 +604,7 @@ const system = async (message, _args) => {
 const analytics = async (message) => {
   const embed = createEmbed({
     color: '#303136',
-    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/icons/707227171835609108/f308f34a45ac7644506fb628215a3793.png?size=128' },
+    author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
     title: 'Analytics',
     fields: Object.entries(_analytics).map(e => ({ name: e[0], value: `${e[1]}x used`, inline: true }))
   })
