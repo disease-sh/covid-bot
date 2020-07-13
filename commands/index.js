@@ -39,7 +39,7 @@ const createEmbed = (opts, embed) => new Discord.MessageEmbed(embed)
   .setImage(opts.image || '')
   .setURL(opts.url)
   .setTimestamp()
-  .setFooter(opts.footer || '')
+  .setFooter(opts.footer || 'Invite me to your server using `cov invite`!')
 
 const help = async (message, _args) => {
   const embed = createEmbed({
