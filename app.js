@@ -64,11 +64,15 @@ client.on('message', message => {
 	if (message.author.bot) return;
 	message.content = message.content.toLowerCase()
 	const parsed = parser.parse(message, prefix, { allowSpaceBeforeCommand: true })
-	if (parsed.success && commands[parsed.command]) {
-		commands[parsed.command](message, parsed.arguments)
-		analytics[parsed.command] ? analytics[parsed.command]++ : (analytics[parsed.command] = 1)
-	}else if (parsed.success)
-		message.reply('This command does not exist. Get help by using `cov help`!')
+	try {
+		if (parsed.success && commands[parsed.command]) {
+			commands[parsed.command](message, parsed.arguments)
+			analytics[parsed.command] ? analytics[parsed.command]++ : (analytics[parsed.command] = 1)
+		}else if (parsed.success)
+			message.reply('This command does not exist. Get help by using `cov help`!')
+	}catch(err){
+		console.error(`'${err.message}' on channel ${message.channel.id} in guild ${message.guild.id}`)
+	}
 })
 
 client.login(process.env.TOKEN)
