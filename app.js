@@ -7,7 +7,7 @@ const client = new Discord.Client({
 		status: "online",
 		activity: {
 			type: 'WATCHING', 
-			name: 'NovelCOVID', 
+			name: 'COVID19 data', 
 			url: 'https://disease.sh'
 		}
 	},
