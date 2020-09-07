@@ -4,6 +4,25 @@ const Discord = require('discord.js-light'),
 	{ CanvasRenderService } = require('chartjs-node-canvas')
 
 const _analytics = { }
+
+const wakandaData = {
+	active: 0,
+	recovered: 0,
+	deaths: 0,
+	cases: 0,
+	population: 6000000,
+	critical: 0,
+	tests: 0,
+	casesPerOneMillion: 0,
+	testsPerOneMillion: 0,
+	countryInfo: {
+		flag: 'https://i.redd.it/yvzgtslorrg01.png'
+	},
+	country: 'Kingdom of Wakanda',
+	continent: 'North East Africa, Earth-616',
+	updated: -110592000
+}
+
 const setup = (ChartJS) => {
 	ChartJS.defaults.global.defaultFontColor='#fff'
 	ChartJS.defaults.global.defaultFontStyle='bold'
@@ -111,64 +130,37 @@ const all = async message => {
 const country = async (message, args) => {
 	if (args.length < 1)
 		return await message.channel.send('Please specify a country name.')
-	if (args.join(' ').toLowerCase() != 'wakanda'){
-		const countryData = await api.countries({ country: args.join(' ')})
-		const yesterdayCountryData = await api.yesterday.countries({ country: args })
-		if(countryData.message || yesterdayCountryData.message) 
-			return await message.channel.send(countryData.message || yesterdayCountryData.message)
-		countryData.todayActives = countryData.active - yesterdayCountryData.active
-		countryData.todayRecovereds = countryData.recovered - yesterdayCountryData.recovered
-		countryData.todayCriticals = countryData.critical - yesterdayCountryData.critical
-		countryData.todayTests = countryData.tests - yesterdayCountryData.tests
-		const embed = createEmbed({
-			color: '#303136', 
-			author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
-			thumbnail: countryData.countryInfo.flag,
-			title: `${countryData.country}, ${countryData.continent}`,
-			fields: [
-				{ name: 'Cases', value: `${formatNumber(countryData.cases)}\n(${(countryData.todayCases >= 0 ? "+":"-")+String(Math.abs(countryData.todayCases)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
-				{ name: 'Deaths', value: `${formatNumber(countryData.deaths)}\n(${(countryData.todayDeaths >= 0 ? "+":"-")+String(Math.abs(countryData.todayDeaths)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
-				{ name: 'Active', value: `${formatNumber(countryData.active)}\n(${(countryData.todayActives >= 0 ? "+":"-")+String(Math.abs(countryData.todayActives)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
-				{ name: 'Recovered', value: `${formatNumber(countryData.recovered)}\n(${(countryData.todayRecovereds >= 0 ? "+":"-")+String(Math.abs(countryData.todayRecovereds)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
-				{ name: 'Critical', value: `${formatNumber(countryData.critical)}\n(${(countryData.todayCriticals >= 0 ? "+":"-")+String(Math.abs(countryData.todayCriticals)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
-				{ name: 'Tests', value: `${formatNumber(countryData.tests)}\n(${(countryData.todayTests >= 0 ? "+":"-")+String(Math.abs(countryData.todayTests)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
-				{ name: 'Population', value: formatNumber(countryData.population), inline: true },
-				{ name: 'Infection Rate', value: `${(countryData.casesPerOneMillion/10000).toFixed(4)} %`, inline: true },
-				{ name: 'Fatality Rate', value: `${(countryData.deaths/countryData.cases*100).toFixed(4)} %`, inline: true },
-				{ name: 'Critical Rate', value: `${(countryData.critical/countryData.active*100).toFixed(4)} %`, inline: true },
-				{ name: 'Recovery Rate', value: `${(countryData.recovered/countryData.cases*100).toFixed(4)} %`, inline: true },
-				{ name: 'Test Rate', value: `${(countryData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
-				{ name: 'Last Updated', value: moment(countryData.updated).fromNow(), inline: true }
-			],
-			url: 'https://pufler.dev'
-		})
-		await message.channel.send(embed)
-	}
-	else{
-		const embed = createEmbed({
-			color: '#303136',
-			author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
-			thumbnail: `https://i.redd.it/yvzgtslorrg01.png`,
-			title: `Kingdom of Wakanda, North East Africa, Earth-616`,
-			fields: [
-				{ name: 'Cases', value: `0`, inline: true },
-				{ name: 'Deaths', value: `0`, inline: true },
-				{ name: 'Active', value: `0`, inline: true },
-				{ name: 'Recovered', value: `0`, inline: true },
-				{ name: 'Critical', value: `0`, inline: true },
-				{ name: 'Tests', value: `0`, inline: true },
-				{ name: 'Population', value: `6,000,000`, inline: true },
-				{ name: 'Infection Rate', value: `0%`, inline: true },
-				{ name: 'Fatality Rate', value: `0%`, inline: true },
-				{ name: 'Critical Rate', value: `0%`, inline: true },
-				{ name: 'Recovery Rate', value: `0%`, inline: true },
-				{ name: 'Test Rate', value: `100%`, inline: true },
-				{ name: 'Last Updated', value: `July,1966`, inline: true }
-			],
-			url: 'https://pufler.dev'
-		})
-		await message.channel.send(embed)
-	}
+	const countryData = args.join(' ').toLowerCase() === 'wakanda' ? wakandaData : await api.countries({ country: args.join(' ')})
+	const yesterdayCountryData = args.join(' ').toLowerCase() === 'wakanda' ? wakandaData : await api.yesterday.countries({ country: args })
+	if(countryData.message || yesterdayCountryData.message) 
+		return await message.channel.send(countryData.message || yesterdayCountryData.message)
+	countryData.todayActives = countryData.active - yesterdayCountryData.active
+	countryData.todayRecovereds = countryData.recovered - yesterdayCountryData.recovered
+	countryData.todayCriticals = countryData.critical - yesterdayCountryData.critical
+	countryData.todayTests = countryData.tests - yesterdayCountryData.tests
+	const embed = createEmbed({
+		color: '#303136', 
+		author: { name: 'COVID Stats by puf17640', url: 'https://cdn.discordapp.com/avatars/707564241279909888/370fe81500abffebfa0a600f7c480503.png?size=256' },
+		thumbnail: countryData.countryInfo.flag,
+		title: `${countryData.country}, ${countryData.continent}`,
+		fields: [
+			{ name: 'Cases', value: `${formatNumber(countryData.cases)}\n(${(countryData.todayCases >= 0 ? "+":"-")+String(Math.abs(countryData.todayCases)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+			{ name: 'Deaths', value: `${formatNumber(countryData.deaths)}\n(${(countryData.todayDeaths >= 0 ? "+":"-")+String(Math.abs(countryData.todayDeaths)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+			{ name: 'Active', value: `${formatNumber(countryData.active)}\n(${(countryData.todayActives >= 0 ? "+":"-")+String(Math.abs(countryData.todayActives)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+			{ name: 'Recovered', value: `${formatNumber(countryData.recovered)}\n(${(countryData.todayRecovereds >= 0 ? "+":"-")+String(Math.abs(countryData.todayRecovereds)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+			{ name: 'Critical', value: `${formatNumber(countryData.critical)}\n(${(countryData.todayCriticals >= 0 ? "+":"-")+String(Math.abs(countryData.todayCriticals)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+			{ name: 'Tests', value: `${formatNumber(countryData.tests)}\n(${(countryData.todayTests >= 0 ? "+":"-")+String(Math.abs(countryData.todayTests)).replace(/(.)(?=(\d{3})+$)/g,'$1,')})`, inline: true },
+			{ name: 'Population', value: formatNumber(countryData.population), inline: true },
+			{ name: 'Infection Rate', value: `${(countryData.casesPerOneMillion/10000).toFixed(4)} %`, inline: true },
+			{ name: 'Fatality Rate', value: `${(countryData.deaths/countryData.cases*100).toFixed(4)} %`, inline: true },
+			{ name: 'Critical Rate', value: `${(countryData.critical/countryData.active*100).toFixed(4)} %`, inline: true },
+			{ name: 'Recovery Rate', value: `${(countryData.recovered/countryData.cases*100).toFixed(4)} %`, inline: true },
+			{ name: 'Test Rate', value: `${(countryData.testsPerOneMillion/10000).toFixed(4)} %`, inline: true },
+			{ name: 'Last Updated', value: moment(countryData.updated).fromNow(), inline: true }
+		],
+		url: 'https://pufler.dev'
+	})
+	await message.channel.send(embed)
 }
 
 const graph = async (message, args) => {
