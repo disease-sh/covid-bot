@@ -4,7 +4,7 @@
   "description": "my way of quickstarting a node project",
   "main": "app.js",
   "dependencies": {
-    "chart.js": "2.9.3",
+    "chart.js": "2.9.4",
     "chartjs-node-canvas": "3.0.6",
     "discord-command-parser": "1.4.3",
     "discord.js": "12.2.0",
